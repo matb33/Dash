@@ -8,6 +8,8 @@ What is *Dash*?
 
 *Dash* is not meant to run on a production server. Plugins, such as Flattener, produce files suitable for production use.
 
+*Dash* is meant to work with Apache and mod_rewrite.
+
 Why *Dash*?
 -----------
 
