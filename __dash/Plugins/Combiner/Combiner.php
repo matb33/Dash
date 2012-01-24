@@ -100,12 +100,12 @@ class Combiner extends \Dash\Plugin
 
 		?><div class="expando">
 			<label>
-				<input type="checkbox" name="<?php echo $this->pluginName; ?>[onshiftrefresh]"<?php echo $data[ "onshiftrefresh" ] ? ' checked="checked"' : ""; ?>  />
+				<input type="checkbox" name="<?php echo $this->name; ?>[onshiftrefresh]"<?php echo $data[ "onshiftrefresh" ] ? ' checked="checked"' : ""; ?>  />
 				<span>Check to run only on Shift+Refresh (Ctrl+Refresh on some browsers). Unchecked will always run.</span>
 			</label>
 			<label>
 				<span>Configuration:</span>
-				<textarea name="<?php echo $this->pluginName; ?>[configuration]"><?php echo $data[ "configuration" ]; ?></textarea>
+				<textarea name="<?php echo $this->name; ?>[configuration]"><?php echo $data[ "configuration" ]; ?></textarea>
 			</label>
 		</div>
 		<?php
@@ -115,8 +115,8 @@ class Combiner extends \Dash\Plugin
 	{
 		$data = $this->settings->get();
 
-		$data[ "onshiftrefresh" ] = isset( $post[ $this->pluginName ][ "onshiftrefresh" ] );
-		$data[ "configuration" ] = $post[ $this->pluginName ][ "configuration" ];
+		$data[ "onshiftrefresh" ] = isset( $post[ $this->name ][ "onshiftrefresh" ] );
+		$data[ "configuration" ] = $post[ $this->name ][ "configuration" ];
 
 		$this->settings->set( $data );
 

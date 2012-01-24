@@ -155,20 +155,20 @@ class Flattener extends \Dash\Plugin
 		?><p>This plugin listens to the <?php echo self::EVENT; ?> event.</p>
 		<div class="expando">
 			<label>
-				<input type="checkbox" name="<?php echo $this->pluginName; ?>[onshiftrefresh]"<?php echo $data[ "onshiftrefresh" ] ? ' checked="checked"' : ""; ?>  />
+				<input type="checkbox" name="<?php echo $this->name; ?>[onshiftrefresh]"<?php echo $data[ "onshiftrefresh" ] ? ' checked="checked"' : ""; ?>  />
 				<span>Check to run only on Shift+Refresh (Ctrl+Refresh on some browsers). Unchecked will always run.</span>
 			</label>
 			<label>
 				<span>Destination folder for flattened files<br /><em>Relative to dash.php</em></span>
-				<input type="text" name="<?php echo $this->pluginName; ?>[flatoutputfolder]" value="<?php echo $data[ "flatoutputfolder" ]; ?>">
+				<input type="text" name="<?php echo $this->name; ?>[flatoutputfolder]" value="<?php echo $data[ "flatoutputfolder" ]; ?>">
 			</label>
 			<label>
 				<span>Folders to be sync'd as-is (using robocopy)<br /><em>Specify one per line, relative to dash.php</em></span>
-				<textarea name="<?php echo $this->pluginName; ?>[syncfolders]"><?php echo $data[ "syncfolders" ]; ?></textarea>
+				<textarea name="<?php echo $this->name; ?>[syncfolders]"><?php echo $data[ "syncfolders" ]; ?></textarea>
 			</label>
 			<label>
 				<span>Registered files for batch flatten (optional)<br /><em>Specify absolute paths (without host)</em></span>
-				<textarea name="<?php echo $this->pluginName; ?>[batch]"><?php echo $data[ "batch" ]; ?></textarea>
+				<textarea name="<?php echo $this->name; ?>[batch]"><?php echo $data[ "batch" ]; ?></textarea>
 			</label>
 		</div>
 		<?php
@@ -178,10 +178,10 @@ class Flattener extends \Dash\Plugin
 	{
 		$data = $this->settings->get();
 
-		$data[ "onshiftrefresh" ] = isset( $post[ $this->pluginName ][ "onshiftrefresh" ] );
-		$data[ "flatoutputfolder" ] = $post[ $this->pluginName ][ "flatoutputfolder" ];
-		$data[ "syncfolders" ] = $post[ $this->pluginName ][ "syncfolders" ];
-		$data[ "batch" ] = $post[ $this->pluginName ][ "batch" ];
+		$data[ "onshiftrefresh" ] = isset( $post[ $this->name ][ "onshiftrefresh" ] );
+		$data[ "flatoutputfolder" ] = $post[ $this->name ][ "flatoutputfolder" ];
+		$data[ "syncfolders" ] = $post[ $this->name ][ "syncfolders" ];
+		$data[ "batch" ] = $post[ $this->name ][ "batch" ];
 
 		$this->settings->set( $data );
 

@@ -9,11 +9,11 @@ abstract class Plugin
 	protected $manager;
 	protected $dispatcher;
 	protected $settings;
-	protected $pluginName;
+	protected $name;
 
 	public function __construct()
 	{
-		$this->pluginName = basename( get_called_class() );
+		$this->name = basename( get_called_class() );
 	}
 
 	public function setPluginManager( PluginManager $pluginManager )
@@ -46,7 +46,7 @@ abstract class Plugin
 		$data = $this->settings->get();
 
 		?><label class="enabled">
-			<input type="checkbox" name="<?php echo $this->pluginName; ?>[enabled]" value="1"<?php echo $data[ "enabled" ] ? ' checked="checked"' : ""; ?> /><span>Check to enable</span>
+			<input type="checkbox" name="<?php echo $this->name; ?>[enabled]" value="1"<?php echo $data[ "enabled" ] ? ' checked="checked"' : ""; ?> /><span>Check to enable</span>
 		</label>
 		<?php
 	}
@@ -55,7 +55,7 @@ abstract class Plugin
 	{
 		$data = $this->settings->get();
 
-		$data[ "enabled" ] = isset( $post[ $this->pluginName ][ "enabled" ] ) && $post[ $this->pluginName ][ "enabled" ] === "1";
+		$data[ "enabled" ] = isset( $post[ $this->name ][ "enabled" ] ) && $post[ $this->name ][ "enabled" ] === "1";
 
 		$this->settings->set( $data );
 		$this->settings->commit();

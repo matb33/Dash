@@ -25,7 +25,7 @@ class HelloWorld extends \Dash\Plugin
 		?><div class="expando">
 			<label>
 				<span>Hello who?</span>
-				<input type="text" name="<?php echo $this->pluginName; ?>[who]" value="<?php echo isset( $data[ "who" ] ) ? $data[ "who" ] : ""; ?>" />
+				<input type="text" name="<?php echo $this->name; ?>[who]" value="<?php echo isset( $data[ "who" ] ) ? $data[ "who" ] : ""; ?>" />
 			</label>
 		</div>
 		<?php
@@ -35,7 +35,7 @@ class HelloWorld extends \Dash\Plugin
 	{
 		$data = $this->settings->get();
 
-		$data[ "who" ] = $post[ $this->pluginName ][ "who" ];
+		$data[ "who" ] = $post[ $this->name ][ "who" ];
 
 		$this->settings->set( $data );
 
