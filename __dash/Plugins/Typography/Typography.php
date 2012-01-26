@@ -3,7 +3,6 @@
 namespace Plugins\Typography;
 
 use Plugins\Preparser\ContentEvent;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Typography extends \Dash\Plugin
 {

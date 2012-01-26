@@ -18,8 +18,6 @@ namespace Plugins\LESSCompiler;
 
 use ErrorException;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-
 class LESSCompiler extends \Dash\Plugin
 {
 	public function init()

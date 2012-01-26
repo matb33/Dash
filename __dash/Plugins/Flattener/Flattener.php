@@ -23,8 +23,6 @@ namespace Plugins\Flattener;
 
 use ErrorException;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-
 class Flattener extends \Dash\Plugin
 {
 	const SUBREQ = "FLATTENER_SUBREQ";

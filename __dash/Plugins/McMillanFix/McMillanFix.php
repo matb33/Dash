@@ -4,8 +4,6 @@ namespace Plugins\McMillanFix;
 
 use Plugins\Preparser\ContentEvent;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-
 class McMillanFix extends \Dash\Plugin
 {
 	public function init()

@@ -16,8 +16,6 @@ namespace Plugins\Minifier;
 
 use ErrorException;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-
 class Minifier extends \Dash\Plugin
 {
 	public function init()

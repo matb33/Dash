@@ -2,8 +2,6 @@
 
 namespace Plugins\Preparser;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-
 class Preparser extends \Dash\Plugin
 {
 	const SUBREQ = "PREPARSER_SUBREQ";

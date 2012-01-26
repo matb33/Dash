@@ -27,8 +27,6 @@ namespace Plugins\Combiner;
 
 use ErrorException;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-
 class Combiner extends \Dash\Plugin
 {
 	public function init()
