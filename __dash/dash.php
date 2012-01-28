@@ -14,9 +14,10 @@ $loader->register();
 // Load Dash core classes
 //=================================
 
-$dispatcher = new Symfony\Component\EventDispatcher\EventDispatcher();
-$settingStorage = new Dash\SettingStorage();
-$pluginManager = new Dash\PluginManager( $dispatcher, $settingStorage );
+$pluginManager = new Dash\PluginManager(
+	new Symfony\Component\EventDispatcher\EventDispatcher(),
+	new Dash\JSONSettingStorage()
+);
 
 //=================================
 // Parse raw request and either

@@ -2,7 +2,7 @@
 
 namespace Dash;
 
-class SettingStorage
+class JSONSettingStorage implements SettingStorageInterface
 {
 	private $filename = NULL;
 	private $pluginSettingsList = array();
@@ -56,6 +56,7 @@ class SettingStorage
 		return $this->pluginSettingsList[ $pluginName ];
 	}
 
+	// jsonFormat credit: http://www.php.net/manual/en/function.json-encode.php#80339
 	private function jsonFormat( $json )
 	{
 		$tab = "	";

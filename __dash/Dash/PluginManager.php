@@ -10,14 +10,14 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 class PluginManager
 {
 	private $dispatcher = NULL;
-	private $settingStorage = NULL;
+	private $storage = NULL;
 	private $basePath = NULL;
 	private $pluginList = array();
 
-	public function __construct( EventDispatcher $dispatcher, SettingStorage $settingStorage, $basePath = "Plugins" )
+	public function __construct( EventDispatcher $dispatcher, SettingStorageInterface $storage, $basePath = "Plugins" )
 	{
 		$this->dispatcher = $dispatcher;
-		$this->settingStorage = $settingStorage;
+		$this->storage = $storage;
 		$this->basePath = $basePath;
 
 		$this->instantiatePlugins();
@@ -32,7 +32,7 @@ class PluginManager
 
 		foreach( $pluginNames as $pluginName )
 		{
-			if( $this->settingStorage->getPluginSettings( $pluginName )->isEnabled() )
+			if( $this->storage->getPluginSettings( $pluginName )->isEnabled() )
 			{
 				$this->getPluginInstance( $pluginName );
 			}
@@ -99,7 +99,7 @@ class PluginManager
 				$instance = new $fullyQualifiedClassName;
 				$instance->setPluginManager( $this );
 				$instance->setEventDispatcher( $this->dispatcher );
-				$instance->setPluginSettings( $this->settingStorage->getPluginSettings( $pluginName ) );
+				$instance->setPluginSettings( $this->storage->getPluginSettings( $pluginName ) );
 			}
 			else
 			{

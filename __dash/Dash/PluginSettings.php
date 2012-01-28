@@ -4,12 +4,12 @@ namespace Dash;
 
 class PluginSettings
 {
-	private $settingStorage = NULL;
+	private $storage = NULL;
 	private $settings = array();
 
-	public function __construct( SettingStorage $settingStorage, $isEnabled = false )
+	public function __construct( SettingStorageInterface $storage, $isEnabled = false )
 	{
-		$this->settingStorage = $settingStorage;
+		$this->storage = $storage;
 		$this->settings[ "enabled" ] = $isEnabled;
 	}
 
@@ -30,6 +30,6 @@ class PluginSettings
 
 	public function commit()
 	{
-		$this->settingStorage->write();
+		$this->storage->write();
 	}
 }
