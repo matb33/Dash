@@ -5,5 +5,5 @@ namespace Dash;
 interface SettingStorageInterface
 {
 	public function write();
-	public function getPluginSettings();
+	public function getPluginSettings( $pluginName );
 }
