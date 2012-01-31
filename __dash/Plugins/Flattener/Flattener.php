@@ -1,42 +1,22 @@
 <?php
 
-/*
-
-Flattener expects a specific configuration for batch config.
-Paths are relative to dash.php (except for batch config).
-
-Example batch config:
-
-/about.html
-/careers.html
-/contact.html
-/error.html
-/index.html
-/people.html
-/subscribe.html
-/terms.html
-/work.html
-
-*/
-
 namespace Plugins\Flattener;
 
 use ErrorException;
 
-class Flattener extends \Dash\Plugin
+use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
+
+class Flattener extends AbstractShiftRefresh
 {
 	const SUBREQ = "FLATTENER_SUBREQ";
-	const EVENT = "EOF";
 
 	public function init()
 	{
 		if( ! $this->isFlattenerSubRequest() )
 		{
-			$data = $this->settings->get();
-
-			if( ! $data[ "onshiftrefresh" ] || $data[ "onshiftrefresh" ] && $this->isShiftRefresh() )
+			if( $this->isShiftRefresh() )
 			{
-				$this->dispatcher->addListener( self::EVENT, array( $this, "flatten" ) );
+				$this->dispatcher->addListener( "EOF", array( $this, "flatten" ) );
 			}
 		}
 	}
@@ -145,17 +125,11 @@ class Flattener extends \Dash\Plugin
 
 		$data = $this->settings->get();
 
-		if( ! isset( $data[ "onshiftrefresh" ] ) ) $data[ "onshiftrefresh" ] = false;
 		if( ! isset( $data[ "flatoutputfolder" ] ) ) $data[ "flatoutputfolder" ] = "";
 		if( ! isset( $data[ "syncfolders" ] ) ) $data[ "syncfolders" ] = "";
 		if( ! isset( $data[ "batch" ] ) ) $data[ "batch" ] = "";
 
-		?><p>This plugin listens to the <?php echo self::EVENT; ?> event.</p>
-		<div class="expando">
-			<label>
-				<input type="checkbox" name="<?php echo $this->name; ?>[onshiftrefresh]"<?php echo $data[ "onshiftrefresh" ] ? ' checked="checked"' : ""; ?>  />
-				<span>Check to run only on Shift+Refresh (Ctrl+Refresh on some browsers). Unchecked will always run.</span>
-			</label>
+		?><div class="expando" title="Toggle advanced">
 			<label>
 				<span>Destination folder for flattened files<br /><em>Relative to dash.php</em></span>
 				<input type="text" name="<?php echo $this->name; ?>[flatoutputfolder]" value="<?php echo $data[ "flatoutputfolder" ]; ?>">
@@ -169,6 +143,20 @@ class Flattener extends \Dash\Plugin
 				<textarea name="<?php echo $this->name; ?>[batch]"><?php echo $data[ "batch" ]; ?></textarea>
 			</label>
 		</div>
+		<div class="expando" title="Toggle examples">
+			<p>Example destination folder: <code>../../flat</code></p>
+			<p>Example as-is sync folders: <code>../inc</code></p>
+			<p>Example batch flatten:
+			<code>/about.html
+/careers.html
+/contact.html
+/error.html
+/index.html
+/people.html
+/subscribe.html
+/terms.html
+/work.html</code></p>
+		</div>
 		<?php
 	}
 
@@ -176,7 +164,6 @@ class Flattener extends \Dash\Plugin
 	{
 		$data = $this->settings->get();
 
-		$data[ "onshiftrefresh" ] = isset( $post[ $this->name ][ "onshiftrefresh" ] );
 		$data[ "flatoutputfolder" ] = $post[ $this->name ][ "flatoutputfolder" ];
 		$data[ "syncfolders" ] = $post[ $this->name ][ "syncfolders" ];
 		$data[ "batch" ] = $post[ $this->name ][ "batch" ];
@@ -184,19 +171,6 @@ class Flattener extends \Dash\Plugin
 		$this->settings->set( $data );
 
 		parent::updateSettings( $post );
-	}
-
-	private function isShiftRefresh()
-	{
-		$headers = apache_request_headers();
-
-		foreach( $headers as $key => $value )
-		{
-			if( strtolower( $key ) == "cache-control" && strtolower( $value ) == "no-cache" ) return true;
-			if( strtolower( $key ) == "pragma" && strtolower( $value ) == "no-cache" ) return true;
-		}
-
-		return false;
 	}
 
 	private function isFlattenerSubRequest()

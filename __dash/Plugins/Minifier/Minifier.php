@@ -1,28 +1,16 @@
 <?php
 
-/*
-
-Minifier expects a specific configuration.
-Paths are relative to dash.php.
-
-Example configuration:
-
-../inc/cache/combined.css => ../inc/cache/combined.min.css
-../inc/cache/combined.js => ../inc/cache/combined.min.js
-
-*/
-
 namespace Plugins\Minifier;
 
 use ErrorException;
 
-class Minifier extends \Dash\Plugin
+use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
+
+class Minifier extends AbstractShiftRefresh
 {
 	public function init()
 	{
-		$data = $this->settings->get();
-
-		if( ! $data[ "onshiftrefresh" ] || $data[ "onshiftrefresh" ] && $this->isShiftRefresh() )
+		if( $this->isShiftRefresh() )
 		{
 			$this->dispatcher->addListener( "BOF", array( $this, "minify" ), 10 );
 		}
@@ -93,18 +81,18 @@ class Minifier extends \Dash\Plugin
 
 		$data = $this->settings->get();
 
-		if( ! isset( $data[ "onshiftrefresh" ] ) ) $data[ "onshiftrefresh" ] = false;
 		if( ! isset( $data[ "configuration" ] ) ) $data[ "configuration" ] = "";
 
-		?><div class="expando">
+		?><div class="expando" title="Toggle advanced">
 			<label>
-				<input type="checkbox" name="<?php echo $this->name; ?>[onshiftrefresh]"<?php echo $data[ "onshiftrefresh" ] ? ' checked="checked"' : ""; ?>  />
-				<span>Check to run only on Shift+Refresh (Ctrl+Refresh on some browsers). Unchecked will always run.</span>
-			</label>
-			<label>
-				<span>Configuration:</span>
+				<span>Configuration:<br /><em>Paths are relative to dash.php</em></span>
 				<textarea name="<?php echo $this->name; ?>[configuration]"><?php echo $data[ "configuration" ]; ?></textarea>
 			</label>
+		</div>
+		<div class="expando" title="Toggle examples">
+			<p>Example configuration:
+			<code>../inc/cache/combined.css => ../inc/cache/combined.min.css
+../inc/cache/combined.js => ../inc/cache/combined.min.js</code></p>
 		</div>
 		<?php
 	}
@@ -113,24 +101,10 @@ class Minifier extends \Dash\Plugin
 	{
 		$data = $this->settings->get();
 
-		$data[ "onshiftrefresh" ] = isset( $post[ $this->name ][ "onshiftrefresh" ] );
 		$data[ "configuration" ] = $post[ $this->name ][ "configuration" ];
 
 		$this->settings->set( $data );
 
 		parent::updateSettings( $post );
-	}
-
-	private function isShiftRefresh()
-	{
-		$headers = apache_request_headers();
-
-		foreach( $headers as $key => $value )
-		{
-			if( strtolower( $key ) == "cache-control" && strtolower( $value ) == "no-cache" ) return true;
-			if( strtolower( $key ) == "pragma" && strtolower( $value ) == "no-cache" ) return true;
-		}
-
-		return false;
 	}
 }

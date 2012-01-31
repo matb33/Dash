@@ -4,6 +4,9 @@ RewriteEngine On
 # Dash settings
 #######################################
 
+# Allow SSI to parse .html files
+AddHandler server-parsed .html
+
 # Point /-/ to the Dash framework
 RewriteRule ^-/(.*)$ /__dash/dash.php/$1 [L,QSA]
 
@@ -14,4 +17,5 @@ RewriteRule ^__ - [R=403,L]
 # Custom addition to allow the Preparser plugin to work
 RewriteRule Preparser - [L]
 RewriteCond %{QUERY_STRING} !PREPARSER_SUBREQ
+RewriteCond %{REQUEST_URI} !dash.php
 RewriteRule ^(.*\.html)$ /-/Preparser/$1 [L,QSA]

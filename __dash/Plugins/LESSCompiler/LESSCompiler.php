@@ -1,30 +1,16 @@
 <?php
 
-/*
-
-LESSCompiler expects a specific configuration.
-Paths are relative to dash.php.
-
-Example configuration:
-
-../inc/cache/combined.less.css => ../inc/cache/combined.css
-../inc/styles/ultra-narrow.less.css => ../inc/cache/ultra-narrow.css
-../inc/styles/narrow.less.css => ../inc/cache/narrow.css
-../inc/styles/wide.less.css => ../inc/cache/wide.css
-
-*/
-
 namespace Plugins\LESSCompiler;
 
 use ErrorException;
 
-class LESSCompiler extends \Dash\Plugin
+use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
+
+class LESSCompiler extends AbstractShiftRefresh
 {
 	public function init()
 	{
-		$data = $this->settings->get();
-
-		if( ! $data[ "onshiftrefresh" ] || $data[ "onshiftrefresh" ] && $this->isShiftRefresh() )
+		if( $this->isShiftRefresh() )
 		{
 			$this->dispatcher->addListener( "BOF", array( $this, "compile" ), 20 );
 		}
@@ -127,18 +113,20 @@ class LESSCompiler extends \Dash\Plugin
 
 		$data = $this->settings->get();
 
-		if( ! isset( $data[ "onshiftrefresh" ] ) ) $data[ "onshiftrefresh" ] = false;
 		if( ! isset( $data[ "configuration" ] ) ) $data[ "configuration" ] = "";
 
-		?><div class="expando">
-			<label>
-				<input type="checkbox" name="<?php echo $this->name; ?>[onshiftrefresh]"<?php echo $data[ "onshiftrefresh" ] ? ' checked="checked"' : ""; ?>  />
-				<span>Check to run only on Shift+Refresh (Ctrl+Refresh on some browsers). Unchecked will always run.</span>
-			</label>
+		?><div class="expando" title="Toggle advanced">
 			<label>
 				<span>Configuration:</span>
 				<textarea name="<?php echo $this->name; ?>[configuration]"><?php echo $data[ "configuration" ]; ?></textarea>
 			</label>
+		</div>
+		<div class="expando" title="Toggle examples">
+			<p>Example configuration:
+			<code>../inc/cache/combined.less.css => ../inc/cache/combined.css
+../inc/styles/ultra-narrow.less.css => ../inc/cache/ultra-narrow.css
+../inc/styles/narrow.less.css => ../inc/cache/narrow.css
+../inc/styles/wide.less.css => ../inc/cache/wide.css</code></p>
 		</div>
 		<?php
 	}
@@ -147,24 +135,10 @@ class LESSCompiler extends \Dash\Plugin
 	{
 		$data = $this->settings->get();
 
-		$data[ "onshiftrefresh" ] = isset( $post[ $this->name ][ "onshiftrefresh" ] );
 		$data[ "configuration" ] = $post[ $this->name ][ "configuration" ];
 
 		$this->settings->set( $data );
 
 		parent::updateSettings( $post );
-	}
-
-	private function isShiftRefresh()
-	{
-		$headers = apache_request_headers();
-
-		foreach( $headers as $key => $value )
-		{
-			if( strtolower( $key ) == "cache-control" && strtolower( $value ) == "no-cache" ) return true;
-			if( strtolower( $key ) == "pragma" && strtolower( $value ) == "no-cache" ) return true;
-		}
-
-		return false;
 	}
 }

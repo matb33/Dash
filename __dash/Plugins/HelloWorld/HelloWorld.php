@@ -22,7 +22,7 @@ class HelloWorld extends \Dash\Plugin
 
 		$data = $this->settings->get();
 
-		?><div class="expando">
+		?><div class="expando" title="Toggle advanced">
 			<label>
 				<span>Hello who?</span>
 				<input type="text" name="<?php echo $this->name; ?>[who]" value="<?php echo isset( $data[ "who" ] ) ? $data[ "who" ] : ""; ?>" />
