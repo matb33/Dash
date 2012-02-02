@@ -2,6 +2,7 @@
 
 namespace Plugins\Preparser;
 
+use Dash\Event;
 use Plugins\AbstractCurl\AbstractCurl;
 
 class Preparser extends AbstractCurl
@@ -24,7 +25,7 @@ class Preparser extends AbstractCurl
 		{
 			$this->repeatResponseHeaders( $result[ "header" ] );
 
-			$event = new ContentEvent( $result[ "content" ] );
+			$event = new Event( array(), $result[ "content" ] );
 			$this->dispatcher->dispatch( "PREPARSER", $event );
 			echo $event->getContent();
 		}

@@ -12,7 +12,7 @@ class Minifier extends AbstractShiftRefresh
 	{
 		if( $this->isShiftRefresh() )
 		{
-			$this->dispatcher->addListener( "BOF", array( $this, "minify" ), 10 );
+			$this->addListeners( array( $this, "minify" ) );
 		}
 	}
 

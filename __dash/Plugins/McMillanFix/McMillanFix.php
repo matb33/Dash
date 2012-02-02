@@ -2,16 +2,16 @@
 
 namespace Plugins\McMillanFix;
 
-use Plugins\Preparser\ContentEvent;
+use Dash\Event;
 
 class McMillanFix extends \Dash\Plugin
 {
 	public function init()
 	{
-		$this->dispatcher->addListener( "PREPARSER", array( $this, "parse" ) );
+		$this->addListeners( array( $this, "parse" ) );
 	}
 
-	public function parse( ContentEvent $event )
+	public function parse( Event $event )
 	{
 		$content = $event->getContent();
 

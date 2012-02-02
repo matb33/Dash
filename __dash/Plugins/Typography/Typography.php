@@ -2,16 +2,16 @@
 
 namespace Plugins\Typography;
 
-use Plugins\Preparser\ContentEvent;
+use Dash\Event;
 
 class Typography extends \Dash\Plugin
 {
 	public function init()
 	{
-		$this->dispatcher->addListener( "PREPARSER", array( $this, "parse" ) );
+		$this->addListeners( array( $this, "parse" ) );
 	}
 
-	public function parse( ContentEvent $event )
+	public function parse( Event $event )
 	{
 		require_once "php-typography/php-typography.php";
 

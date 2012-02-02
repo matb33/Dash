@@ -89,6 +89,7 @@ if( isset( $_POST[ "submit" ] ) )
 			}
 
 			.plugin {
+				position: relative;
 				float: left;
 				width: 50%;
 			}
@@ -98,7 +99,6 @@ if( isset( $_POST[ "submit" ] ) )
 			}
 
 			fieldset {
-				position: relative;
 				background-color: #fff;
 				padding: 15px;
 				margin: 0px 20px 20px 0px;
@@ -151,8 +151,8 @@ if( isset( $_POST[ "submit" ] ) )
 
 			.enabled {
 				position: absolute;
-				top: -15px;
-				right: 25px;
+				top: 20px;
+				right: 30px;
 				font-weight: normal;
 				margin-bottom: 10px;
 			}

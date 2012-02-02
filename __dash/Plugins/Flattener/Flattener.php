@@ -16,7 +16,7 @@ class Flattener extends AbstractShiftRefresh
 		{
 			if( $this->isShiftRefresh() )
 			{
-				$this->dispatcher->addListener( "EOF", array( $this, "flatten" ) );
+				$this->addListeners( array( $this, "flatten" ) );
 			}
 		}
 	}
@@ -35,6 +35,7 @@ class Flattener extends AbstractShiftRefresh
 			$batch = str_replace( "\r\n", "\n", $batch );
 
 			$inputRelativeURLs = explode( "\n", $batch );
+			$outputFolder = $this->parseTokens( $data[ "flatoutputfolder" ], $parameters );
 
 			foreach( $inputRelativeURLs as $rawInputRelativeURL )
 			{
@@ -42,15 +43,19 @@ class Flattener extends AbstractShiftRefresh
 
 				if( strlen( $inputRelativeURL ) > 0 )
 				{
-					$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . "?" . self::SUBREQ . "=1";
-					$outputFile = $data[ "flatoutputfolder" ] . $inputRelativeURL;
+					$inputRelativeURL = $this->parseTokens( $inputRelativeURL, $parameters );
+					$qsConjunction = ( strpos( $inputRelativeURL, "?" ) === false ? "?" : "&" );
+					$outputFile = parse_url( $inputRelativeURL, PHP_URL_PATH );
+
+					$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . $qsConjunction . self::SUBREQ . "=1";
+					$outputFile = $outputFolder . $outputFile;
 
 					echo "flatten url: " . $inputURL . ", path: " . $outputFile . "\n";
 					$this->fetchAndWrite( $inputURL, $outputFile );
 				}
 			}
 
-			$this->syncFolders( true );
+			$this->syncFolders( $outputFolder, true );
 		}
 	}
 
@@ -62,12 +67,16 @@ class Flattener extends AbstractShiftRefresh
 
 		$inputRelativeURL = $_SERVER[ "REDIRECT_DOCUMENT_URI" ];
 
+		$outputFolder = $data[ "flatoutputfolder" ];
+		$outputFolder = $this->removeTokens( $outputFolder );
+		$outputFolder = $this->collapseSlashes( $outputFolder );
+
 		$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . "?" . self::SUBREQ . "=1";
-		$outputFile = $data[ "flatoutputfolder" ] . $inputRelativeURL;
+		$outputFile = $outputFolder . $inputRelativeURL;
 
 		$this->fetchAndWrite( $inputURL, $outputFile );
 
-		$this->syncFolders();
+		$this->syncFolders( $outputFolder );
 	}
 
 	private function fetchAndWrite( $url, $outFile )
@@ -84,7 +93,7 @@ class Flattener extends AbstractShiftRefresh
 		file_put_contents( $outFile, $contents );
 	}
 
-	private function syncFolders( $debug = false )
+	private function syncFolders( $outputFolder, $debug = false )
 	{
 		$data = $this->settings->get();
 
@@ -99,7 +108,7 @@ class Flattener extends AbstractShiftRefresh
 
 			if( $realSyncFolder !== false )
 			{
-				$incOutPath = $data[ "flatoutputfolder" ] . DIRECTORY_SEPARATOR . basename( $realSyncFolder );
+				$incOutPath = $outputFolder . DIRECTORY_SEPARATOR . basename( $realSyncFolder );
 
 				if( ! file_exists( $incOutPath ) )
 				{
@@ -119,6 +128,28 @@ class Flattener extends AbstractShiftRefresh
 		}
 	}
 
+	private function parseTokens( $content, Array $parameters )
+	{
+		// replace %1, %2, %3 in content with equivalent in parameters
+		foreach( $parameters as $index => $parameter )
+		{
+			$content = str_replace( "%" . ( $index + 1 ), $parameter, $content );
+		}
+
+		return $content;
+	}
+
+	private function removeTokens( $content )
+	{
+		// remove all %1, %2, %3 tokens
+		return preg_replace( "/%\d+/", "", $content );
+	}
+
+	private function collapseSlashes( $content )
+	{
+		return preg_replace( "#([/\\\])[/\\\]+#", "\1", $content );
+	}
+
 	public function renderSettings()
 	{
 		parent::renderSettings();
@@ -131,7 +162,7 @@ class Flattener extends AbstractShiftRefresh
 
 		?><div class="expando" title="Toggle advanced">
 			<label>
-				<span>Destination folder for flattened files<br /><em>Relative to dash.php</em></span>
+				<span>Destination folder for flattened files<br /><em>Relative to dash.php<br />%1, %2, %3 etc act as parameter tokens</em></span>
 				<input type="text" name="<?php echo $this->name; ?>[flatoutputfolder]" value="<?php echo $data[ "flatoutputfolder" ]; ?>">
 			</label>
 			<label>

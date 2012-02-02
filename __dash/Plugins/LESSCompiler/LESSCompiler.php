@@ -12,7 +12,7 @@ class LESSCompiler extends AbstractShiftRefresh
 	{
 		if( $this->isShiftRefresh() )
 		{
-			$this->dispatcher->addListener( "BOF", array( $this, "compile" ), 20 );
+			$this->addListeners( array( $this, "compile" ) );
 		}
 	}
 

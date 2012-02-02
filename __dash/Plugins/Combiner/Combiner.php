@@ -12,7 +12,7 @@ class Combiner extends AbstractShiftRefresh
 	{
 		if( $this->isShiftRefresh() )
 		{
-			$this->dispatcher->addListener( "BOF", array( $this, "combine" ), 30 );
+			$this->addListeners( array( $this, "combine" ) );
 		}
 	}
 

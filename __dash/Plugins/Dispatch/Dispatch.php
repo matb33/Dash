@@ -2,16 +2,18 @@
 
 namespace Plugins\Dispatch;
 
+use Dash\Event;
+
 class Dispatch extends \Dash\Plugin
 {
 	public function run( Array $parameters )
 	{
-		foreach( $parameters as $eventName )
+		$eventName = array_shift( $parameters );
+
+		if( strlen( $eventName ) > 0 )
 		{
-			if( strlen( $eventName ) > 0 )
-			{
-				$this->dispatcher->dispatch( $eventName );
-			}
+			$eventParameters = new Event( $parameters );
+			$this->dispatcher->dispatch( $eventName, $eventParameters );
 		}
 	}
 }
