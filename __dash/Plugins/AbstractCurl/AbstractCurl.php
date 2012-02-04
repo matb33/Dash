@@ -66,6 +66,8 @@ abstract class AbstractCurl extends \Dash\Plugin
 	protected function getURL( Array $parameters )
 	{
 		$path = "/" . implode( "/", $parameters );
+		$path = "/" . str_replace( "@", "/", $path );
+
 		return "http://" . $_SERVER[ "HTTP_HOST" ] . $path . "?" . $_SERVER[ "QUERY_STRING" ];
 	}
 }

@@ -5,6 +5,7 @@ namespace Plugins\Flattener;
 use ErrorException;
 
 use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
+use Dash\Event;
 
 class Flattener extends AbstractShiftRefresh
 {
@@ -55,11 +56,11 @@ class Flattener extends AbstractShiftRefresh
 				}
 			}
 
-			$this->syncFolders( $outputFolder, true );
+			$this->syncFolders( $outputFolder, $parameters, true );
 		}
 	}
 
-	public function flatten()
+	public function flatten( Event $event )
 	{
 		// Single functionality
 
@@ -76,7 +77,7 @@ class Flattener extends AbstractShiftRefresh
 
 		$this->fetchAndWrite( $inputURL, $outputFile );
 
-		$this->syncFolders( $outputFolder );
+		$this->syncFolders( $outputFolder, $event->getParameters(), false );
 	}
 
 	private function fetchAndWrite( $url, $outFile )
@@ -93,7 +94,7 @@ class Flattener extends AbstractShiftRefresh
 		file_put_contents( $outFile, $contents );
 	}
 
-	private function syncFolders( $outputFolder, $debug = false )
+	private function syncFolders( $outputFolder, $parameters, $debug = false )
 	{
 		$data = $this->settings->get();
 
@@ -101,22 +102,25 @@ class Flattener extends AbstractShiftRefresh
 		$syncFolders = str_replace( "\r\n", "\n", $syncFolders );
 		$syncFolders = explode( "\n", $syncFolders );
 
-		foreach( $syncFolders as $rawSyncFolder )
+		foreach( $syncFolders as $configLine )
 		{
-			$syncFolder = trim( $rawSyncFolder );
+			$rawFolders = explode( "=>", $configLine );
+			$syncFolder = $this->parseTokens( trim( $rawFolders[0] ), $parameters );
+			$syncDestination = $this->parseTokens( trim( $rawFolders[1] ), $parameters );
+
 			$realSyncFolder = realpath( $syncFolder );
 
 			if( $realSyncFolder !== false )
 			{
-				$incOutPath = $outputFolder . DIRECTORY_SEPARATOR . basename( $realSyncFolder );
-
-				if( ! file_exists( $incOutPath ) )
+				if( ! file_exists( $syncDestination ) )
 				{
-					if( $debug ) echo "mkdir " . $incOutPath . "\n";
-					mkdir( $incOutPath, 0777, true );
+					if( $debug ) echo "mkdir " . $syncDestination . "\n";
+					mkdir( $syncDestination, 0777, true );
 				}
 
-				$command = "robocopy \"" . $realSyncFolder . "\" \"" . realpath( $incOutPath ) . "\" /PURGE /S /XD .svn";
+				$realSyncDestination = realpath( $syncDestination );
+
+				$command = "robocopy \"" . $realSyncFolder . "\" \"" . $realSyncDestination . "\" /PURGE /S /XD .svn";
 
 				if( $debug ) echo $command . "\n";
 				exec( $command );

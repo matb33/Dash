@@ -31,22 +31,23 @@ class URLReplace extends AbstractCurl
 
 	private function replace( $content, Array $parameters )
 	{
-		$host = $parameters[ 1 ];
+		array_shift( $parameters );
+
+		$path = "//" . implode( "/", $parameters );
 
 		// html urls and hrefs
-		$content = preg_replace( "#(href|src)=([\"'])(?!http|\\#|//)([^\"']+)([\"'])#", "$1=$2//" . $host . "$3$2", $content );
+		$content = preg_replace( "#(href|src)=([\"'])(?!http|\\#|//)([^\"']+)([\"'])#", "$1=$2" . $path . "$3$2", $content );
 
 		// css urls
-		$content = preg_replace( "#url\(([\"']?)([^\"']*)([\"']?)\)#", "url($1//" . $host . "$2$1)", $content );
+		$content = preg_replace( "#url\(([\"']?)([^\"']*)([\"']?)\)#", "url($1" . $path . "$2$1)", $content );
 
 		return $content;
 	}
 
 	protected function getURL( Array $parameters )
 	{
-		array_pop( $parameters );
+		$path = "/" . str_replace( "@", "/", $parameters[ 0 ] );
 
-		$path = "/" . implode( "/", $parameters );
 		return "http://" . $_SERVER[ "HTTP_HOST" ] . $path . "?" . $_SERVER[ "QUERY_STRING" ];
 	}
 }

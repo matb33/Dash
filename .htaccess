@@ -10,10 +10,6 @@ AddHandler server-parsed .html
 # Point /-/ to the Dash framework
 RewriteRule ^-/(.*)$ /__dash/dash.php/$1 [L,QSA]
 
-# Disallow access to files starting with __, except for dash.php
-RewriteCond %{REQUEST_URI} !dash\.php
-RewriteRule ^__ - [R=403,L]
-
 # Custom addition to allow the Preparser plugin to work
 RewriteRule Preparser - [L]
 RewriteCond %{QUERY_STRING} !PREPARSER_SUBREQ
