@@ -35,5 +35,5 @@ if( count( $parameters ) > 0 )
 }
 else
 {
-	require_once "admin.php";
+	require_once "admin/index.php";
 }

@@ -9,11 +9,14 @@ abstract class Plugin
 	protected $manager;
 	protected $dispatcher;
 	protected $settings;
-	protected $name;
+
+	public $name;
+	public $viewModel;
 
 	public function __construct()
 	{
 		$this->name = basename( get_called_class() );
+		$this->viewModel = "DASH.viewModel." . $this->name;
 	}
 
 	public function setPluginManager( PluginManager $pluginManager )
@@ -43,45 +46,54 @@ abstract class Plugin
 
 	public function renderSettings()
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		?><label class="enabled">
-			<input type="checkbox" name="<?php echo $this->name; ?>[enabled]" value="1"<?php echo $data[ "enabled" ] ? ' checked="checked"' : ""; ?> /><span>Check to enable</span>
+		if( ! isset( $settings[ "enabled" ] ) ) $settings[ "enabled" ] = false;
+		if( ! isset( $settings[ "events" ] ) ) $settings[ "events" ] = array( "default" => "0" );
+
+		?><script type="text/javascript">
+			<?php echo $this->viewModel; ?>.enabled = ko.observable( <?php echo $settings[ "enabled" ] ? "true" : "false"; ?> );
+			<?php echo $this->viewModel; ?>.events = ko.observable( <?php echo json_encode( $this->arrayEventsToRaw( $settings[ "events" ] ) ); ?> );
+			<?php echo $this->viewModel; ?>.enabled.subscribe( function( value ) {
+				DASH.sync( "<?php echo $this->name; ?>", <?php echo $this->viewModel; ?> );
+			});
+		</script>
+
+		<!-- ko with: <?php echo $this->viewModel; ?> -->
+		<label class="enabled">
+			<input type="checkbox" data-bind="checked: enabled" /> <span>Check to enable</span>
 		</label>
 		<label class="events">
 			<span>Event config:<br /><em>Format: eventName[:priority],eventName[:priority] (example: bleh:10,blah:20,other)</em></span>
-			<input type="text" name="<?php echo $this->name; ?>[events]" value="<?php echo isset( $data[ "events" ] ) ? $this->arrayEventsToRaw( $data[ "events" ] ) : "default:0"; ?>" />
+			<input type="text" data-bind="value: events" />
 		</label>
+		<!-- /ko -->
 		<?php
 	}
 
-	public function updateSettings( Array $post )
+	public function updateSettings( Array $newSettings )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		$data[ "enabled" ] = isset( $post[ $this->name ][ "enabled" ] ) && $post[ $this->name ][ "enabled" ] === "1";
+		$settings[ "enabled" ] = isset( $newSettings[ "enabled" ] ) && $newSettings[ "enabled" ] === true;
 
-		if( isset( $post[ $this->name ][ "events" ] ) )
+		if( isset( $newSettings[ "events" ] ) )
 		{
-			if( ! isset( $data[ "events" ] ) )
-			{
-				$data[ "events" ] = array();
-			}
-
-			$data[ "events" ] = $this->rawEventsToArray( $data[ "events" ], $post[ $this->name ][ "events" ] );
+			if( ! isset( $settings[ "events" ] ) ) $settings[ "events" ] = array();
+			$settings[ "events" ] = $this->rawEventsToArray( $settings[ "events" ], $newSettings[ "events" ] );
 		}
 
-		$this->settings->set( $data );
+		$this->settings->set( $settings );
 		$this->settings->commit();
 	}
 
 	protected function addListeners( Array $callback )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		if( isset( $data[ "events" ] ) && is_array( $data[ "events" ] ) )
+		if( isset( $settings[ "events" ] ) && is_array( $settings[ "events" ] ) )
 		{
-			foreach( $data[ "events" ] as $eventName => $eventPriority )
+			foreach( $settings[ "events" ] as $eventName => $eventPriority )
 			{
 				$this->dispatcher->addListener( $eventName, $callback, $eventPriority );
 			}

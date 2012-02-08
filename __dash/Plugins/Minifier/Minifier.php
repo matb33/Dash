@@ -18,8 +18,8 @@ class Minifier extends AbstractShiftRefresh
 
 	public function minify()
 	{
-		$data = $this->settings->get();
-		$config = $data[ "configuration" ];
+		$settings = $this->settings->get();
+		$config = $settings[ "configuration" ];
 		$config = str_replace( "\r\n", "\n", $config );
 		$basePath = dirname( $_SERVER[ "SCRIPT_FILENAME" ] );
 
@@ -79,32 +79,40 @@ class Minifier extends AbstractShiftRefresh
 	{
 		parent::renderSettings();
 
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		if( ! isset( $data[ "configuration" ] ) ) $data[ "configuration" ] = "";
+		if( ! isset( $settings[ "configuration" ] ) ) $settings[ "configuration" ] = "";
 
-		?><div class="expando" title="Toggle advanced">
+		?><script type="text/javascript">
+			<?php echo $this->viewModel; ?>.configuration = ko.observable( <?php echo json_encode( $settings[ "configuration" ] ); ?> );
+		</script>
+
+		<!-- ko with: <?php echo $this->viewModel; ?> -->
+		<details>
+			<summary>Toggle advanced</summary>
 			<label>
 				<span>Configuration:<br /><em>Paths are relative to dash.php</em></span>
-				<textarea name="<?php echo $this->name; ?>[configuration]"><?php echo $data[ "configuration" ]; ?></textarea>
+				<textarea data-bind="value: configuration"></textarea>
 			</label>
-		</div>
-		<div class="expando" title="Toggle examples">
+		</details>
+		<details>
+			<summary>Toggle examples</summary>
 			<p>Example configuration:
 			<code>../inc/cache/combined.css => ../inc/cache/combined.min.css
 ../inc/cache/combined.js => ../inc/cache/combined.min.js</code></p>
-		</div>
+		</details>
+		<!-- /ko -->
 		<?php
 	}
 
-	public function updateSettings( Array $post )
+	public function updateSettings( Array $newSettings )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		$data[ "configuration" ] = $post[ $this->name ][ "configuration" ];
+		$settings[ "configuration" ] = $newSettings[ "configuration" ];
 
-		$this->settings->set( $data );
+		$this->settings->set( $settings );
 
-		parent::updateSettings( $post );
+		parent::updateSettings( $newSettings );
 	}
 }

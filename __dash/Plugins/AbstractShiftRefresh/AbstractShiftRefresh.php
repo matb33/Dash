@@ -6,8 +6,8 @@ abstract class AbstractShiftRefresh extends \Dash\Plugin
 {
 	protected function isShiftRefresh()
 	{
-		$data = $this->settings->get();
-		return ( ! $data[ "onshiftrefresh" ] || $data[ "onshiftrefresh" ] && $this->isShiftRefreshSentInHeaders() );
+		$settings = $this->settings->get();
+		return ( ! $settings[ "onshiftrefresh" ] || $settings[ "onshiftrefresh" ] && $this->isShiftRefreshSentInHeaders() );
 	}
 
 	private function isShiftRefreshSentInHeaders()
@@ -26,25 +26,31 @@ abstract class AbstractShiftRefresh extends \Dash\Plugin
 	{
 		parent::renderSettings();
 
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		if( ! isset( $data[ "onshiftrefresh" ] ) ) $data[ "onshiftrefresh" ] = true;
+		if( ! isset( $settings[ "onshiftrefresh" ] ) ) $settings[ "onshiftrefresh" ] = true;
 
-		?><label>
-			<input type="checkbox" name="<?php echo $this->name; ?>[onshiftrefresh]"<?php echo $data[ "onshiftrefresh" ] ? ' checked="checked"' : ""; ?>  />
+		?><script type="text/javascript">
+			<?php echo $this->viewModel; ?>.onshiftrefresh = ko.observable( <?php echo $settings[ "onshiftrefresh" ] ? "true" : "false"; ?> );
+		</script>
+
+		<!-- ko with: <?php echo $this->viewModel; ?> -->
+		<label>
+			<input type="checkbox" data-bind="checked: onshiftrefresh" />
 			<span>Check to run only on Shift+Refresh (Ctrl+Refresh on some browsers). Unchecked will always run.</span>
 		</label>
+		<!-- /ko -->
 		<?php
 	}
 
-	public function updateSettings( Array $post )
+	public function updateSettings( Array $newSettings )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		$data[ "onshiftrefresh" ] = isset( $post[ $this->name ][ "onshiftrefresh" ] );
+		$settings[ "onshiftrefresh" ] = isset( $newSettings[ "onshiftrefresh" ] ) && $newSettings[ "onshiftrefresh" ] === true;
 
-		$this->settings->set( $data );
+		$this->settings->set( $settings );
 
-		parent::updateSettings( $post );
+		parent::updateSettings( $newSettings );
 	}
 }

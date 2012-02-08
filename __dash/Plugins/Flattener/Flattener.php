@@ -30,13 +30,13 @@ class Flattener extends AbstractShiftRefresh
 
 			// Batch functionality
 
-			$data = $this->settings->get();
+			$settings = $this->settings->get();
 
-			$batch = $data[ "batch" ];
+			$batch = $settings[ "batch" ];
 			$batch = str_replace( "\r\n", "\n", $batch );
 
 			$inputRelativeURLs = explode( "\n", $batch );
-			$outputFolder = $this->parseTokens( $data[ "flatoutputfolder" ], $parameters );
+			$outputFolder = $this->parseTokens( $settings[ "flatoutputfolder" ], $parameters );
 
 			foreach( $inputRelativeURLs as $rawInputRelativeURL )
 			{
@@ -64,11 +64,11 @@ class Flattener extends AbstractShiftRefresh
 	{
 		// Single functionality
 
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
 		$inputRelativeURL = $_SERVER[ "REDIRECT_DOCUMENT_URI" ];
 
-		$outputFolder = $data[ "flatoutputfolder" ];
+		$outputFolder = $settings[ "flatoutputfolder" ];
 		$outputFolder = $this->removeTokens( $outputFolder );
 		$outputFolder = $this->collapseSlashes( $outputFolder );
 
@@ -89,16 +89,30 @@ class Flattener extends AbstractShiftRefresh
 			mkdir( $outPath, 0777, true );
 		}
 
-		$contents = file_get_contents( $url );
+		$contents = $this->fileGetContents( $url );
 
 		file_put_contents( $outFile, $contents );
 	}
 
+	private function fileGetContents( $filename )
+	{
+		try
+		{
+			$contents = file_get_contents( $filename );
+		}
+		catch( \Exception $e )
+		{
+			$contents = "";
+		}
+
+		return mb_convert_encoding( $contents, "UTF-8", mb_detect_encoding( $contents, "UTF-8, ISO-8859-1", true ) );
+	}
+
 	private function syncFolders( $outputFolder, $parameters, $debug = false )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		$syncFolders = $data[ "syncfolders" ];
+		$syncFolders = $settings[ "syncfolders" ];
 		$syncFolders = str_replace( "\r\n", "\n", $syncFolders );
 		$syncFolders = explode( "\n", $syncFolders );
 
@@ -158,27 +172,36 @@ class Flattener extends AbstractShiftRefresh
 	{
 		parent::renderSettings();
 
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		if( ! isset( $data[ "flatoutputfolder" ] ) ) $data[ "flatoutputfolder" ] = "";
-		if( ! isset( $data[ "syncfolders" ] ) ) $data[ "syncfolders" ] = "";
-		if( ! isset( $data[ "batch" ] ) ) $data[ "batch" ] = "";
+		if( ! isset( $settings[ "flatoutputfolder" ] ) ) $settings[ "flatoutputfolder" ] = "";
+		if( ! isset( $settings[ "syncfolders" ] ) ) $settings[ "syncfolders" ] = "";
+		if( ! isset( $settings[ "batch" ] ) ) $settings[ "batch" ] = "";
 
-		?><div class="expando" title="Toggle advanced">
+		?><script type="text/javascript">
+			<?php echo $this->viewModel; ?>.flatoutputfolder = ko.observable( <?php echo json_encode( $settings[ "flatoutputfolder" ] ); ?> );
+			<?php echo $this->viewModel; ?>.syncfolders = ko.observable( <?php echo json_encode( $settings[ "syncfolders" ] ); ?> );
+			<?php echo $this->viewModel; ?>.batch = ko.observable( <?php echo json_encode( $settings[ "batch" ] ); ?> );
+		</script>
+
+		<!-- ko with: <?php echo $this->viewModel; ?> -->
+		<details>
+			<summary>Toggle advanced</summary>
 			<label>
 				<span>Destination folder for flattened files<br /><em>Relative to dash.php<br />%1, %2, %3 etc act as parameter tokens</em></span>
-				<input type="text" name="<?php echo $this->name; ?>[flatoutputfolder]" value="<?php echo $data[ "flatoutputfolder" ]; ?>">
+				<input type="text" data-bind="value: flatoutputfolder" />
 			</label>
 			<label>
 				<span>Folders to be sync'd as-is (using robocopy)<br /><em>Specify one per line, relative to dash.php</em></span>
-				<textarea name="<?php echo $this->name; ?>[syncfolders]"><?php echo $data[ "syncfolders" ]; ?></textarea>
+				<textarea data-bind="value: syncfolders"></textarea>
 			</label>
 			<label>
 				<span>Registered files for batch flatten (optional)<br /><em>Specify absolute paths (without host)</em></span>
-				<textarea name="<?php echo $this->name; ?>[batch]"><?php echo $data[ "batch" ]; ?></textarea>
+				<textarea data-bind="value: batch"></textarea>
 			</label>
-		</div>
-		<div class="expando" title="Toggle examples">
+		</details>
+		<details>
+			<summary>Toggle examples</summary>
 			<p>Example destination folder: <code>../../flat</code></p>
 			<p>Example as-is sync folders: <code>../inc</code></p>
 			<p>Example batch flatten:
@@ -191,21 +214,22 @@ class Flattener extends AbstractShiftRefresh
 /subscribe.html
 /terms.html
 /work.html</code></p>
-		</div>
+		</details>
+		<!-- /ko -->
 		<?php
 	}
 
-	public function updateSettings( Array $post )
+	public function updateSettings( Array $newSettings )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		$data[ "flatoutputfolder" ] = $post[ $this->name ][ "flatoutputfolder" ];
-		$data[ "syncfolders" ] = $post[ $this->name ][ "syncfolders" ];
-		$data[ "batch" ] = $post[ $this->name ][ "batch" ];
+		$settings[ "flatoutputfolder" ] = $newSettings[ "flatoutputfolder" ];
+		$settings[ "syncfolders" ] = $newSettings[ "syncfolders" ];
+		$settings[ "batch" ] = $newSettings[ "batch" ];
 
-		$this->settings->set( $data );
+		$this->settings->set( $settings );
 
-		parent::updateSettings( $post );
+		parent::updateSettings( $newSettings );
 	}
 
 	private function isFlattenerSubRequest()

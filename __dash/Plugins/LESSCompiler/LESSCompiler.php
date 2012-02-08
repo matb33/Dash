@@ -16,10 +16,25 @@ class LESSCompiler extends AbstractShiftRefresh
 		}
 	}
 
+	public function run( Array $parameters )
+	{
+		$inputFile = implode( "/", $parameters );
+		$realInputFile = realpath( str_replace( ",", ".", $inputFile ) );
+
+		if( $realInputFile !== false )
+		{
+			echo $this->less( $realInputFile );
+		}
+		else
+		{
+			throw new ErrorException( "Invalid input file: " . $inputFile );
+		}
+	}
+
 	public function compile()
 	{
-		$data = $this->settings->get();
-		$config = $data[ "configuration" ];
+		$settings = $this->settings->get();
+		$config = $settings[ "configuration" ];
 		$config = str_replace( "\r\n", "\n", $config );
 		$basePath = dirname( $_SERVER[ "SCRIPT_FILENAME" ] );
 
@@ -52,9 +67,9 @@ class LESSCompiler extends AbstractShiftRefresh
 		}
 	}
 
-	private function less( $in, $out )
+	private function less( $in, $out = NULL )
 	{
-		$command = "cscript //nologo \"" . __DIR__ . DIRECTORY_SEPARATOR . "lessc.wsf\" \"" . $in . "\" \"" . $out . "\"";
+		$command = "cscript //nologo \"" . __DIR__ . DIRECTORY_SEPARATOR . "lessc.wsf\" \"" . $in . "\"" . ( $out !== NULL ? " \"" . $out . "\"" : "" );
 
 		$outputArray = NULL;
 		$errors = array();
@@ -82,7 +97,7 @@ class LESSCompiler extends AbstractShiftRefresh
 			return false;
 		}
 
-		return true;
+		return $output;
 	}
 
 	private function displayErrors( Array $errors )
@@ -111,34 +126,42 @@ class LESSCompiler extends AbstractShiftRefresh
 	{
 		parent::renderSettings();
 
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		if( ! isset( $data[ "configuration" ] ) ) $data[ "configuration" ] = "";
+		if( ! isset( $settings[ "configuration" ] ) ) $settings[ "configuration" ] = "";
 
-		?><div class="expando" title="Toggle advanced">
+		?><script type="text/javascript">
+			<?php echo $this->viewModel; ?>.configuration = ko.observable( <?php echo json_encode( $settings[ "configuration" ] ); ?> );
+		</script>
+
+		<!-- ko with: <?php echo $this->viewModel; ?> -->
+		<details>
+			<summary>Toggle advanced</summary>
 			<label>
 				<span>Configuration:</span>
-				<textarea name="<?php echo $this->name; ?>[configuration]"><?php echo $data[ "configuration" ]; ?></textarea>
+				<textarea data-bind="value: configuration"></textarea>
 			</label>
-		</div>
-		<div class="expando" title="Toggle examples">
+		</details>
+		<details>
+			<summary>Toggle examples</summary>
 			<p>Example configuration:
 			<code>../inc/cache/combined.less.css => ../inc/cache/combined.css
 ../inc/styles/ultra-narrow.less.css => ../inc/cache/ultra-narrow.css
 ../inc/styles/narrow.less.css => ../inc/cache/narrow.css
 ../inc/styles/wide.less.css => ../inc/cache/wide.css</code></p>
-		</div>
+		</details>
+		<!-- /ko -->
 		<?php
 	}
 
-	public function updateSettings( Array $post )
+	public function updateSettings( Array $newSettings )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		$data[ "configuration" ] = $post[ $this->name ][ "configuration" ];
+		$settings[ "configuration" ] = $newSettings[ "configuration" ];
 
-		$this->settings->set( $data );
+		$this->settings->set( $settings );
 
-		parent::updateSettings( $post );
+		parent::updateSettings( $newSettings );
 	}
 }

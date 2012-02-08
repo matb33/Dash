@@ -14,14 +14,16 @@ class Curl extends AbstractCurl
 
 	public function callback( Event $event )
 	{
-		$result = $this->curl( $event->getParameters() );
+		$url = $this->getURL( $event->getParameters() );
+		$result = $this->curl( $url );
 		$content = $event->getContent() . $result[ "content" ];
 		$event->setContent( $content );
 	}
 
 	public function run( Array $parameters )
 	{
-		$result = $this->curl( $parameters );
+		$url = $this->getURL( $parameters );
+		$result = $this->curl( $url );
 
 		if( $result[ "success" ] === true )
 		{
@@ -29,13 +31,13 @@ class Curl extends AbstractCurl
 		}
 	}
 
-	protected function curl( Array $parameters )
+	public function curl( $url )
 	{
-		$url = $this->getURL( $parameters );
+		// Promote curl method from protected to public
 		return parent::curl( $url );
 	}
 
-	protected function getURL( Array $parameters )
+	public function getURL( Array $parameters )
 	{
 		array_pop( $parameters );
 

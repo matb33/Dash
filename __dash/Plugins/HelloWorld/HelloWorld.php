@@ -6,9 +6,9 @@ class HelloWorld extends \Dash\Plugin
 {
 	public function run( Array $parameters )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		echo "Hello " . ( isset( $data[ "who" ] ) && strlen( $data[ "who" ] ) > 0 ? $data[ "who" ] : "world" ) . "!";
+		echo "Hello " . ( isset( $settings[ "who" ] ) && strlen( $settings[ "who" ] ) > 0 ? $settings[ "who" ] : "world" ) . "!";
 
 		if( count( $parameters ) )
 		{
@@ -20,25 +20,34 @@ class HelloWorld extends \Dash\Plugin
 	{
 		parent::renderSettings();
 
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		?><div class="expando" title="Toggle advanced">
+		if( ! isset( $settings[ "who" ] ) ) $settings[ "who" ] = "";
+
+		?><script type="text/javascript">
+			<?php echo $this->viewModel; ?>.who = ko.observable( <?php echo json_encode( $settings[ "who" ] ); ?> );
+		</script>
+
+		<!-- ko with: <?php echo $this->viewModel; ?> -->
+		<details>
+			<summary>Toggle advanced</summary>
 			<label>
 				<span>Hello who?</span>
-				<input type="text" name="<?php echo $this->name; ?>[who]" value="<?php echo isset( $data[ "who" ] ) ? $data[ "who" ] : ""; ?>" />
+				<input type="text" data-bind="value: who" />
 			</label>
-		</div>
+		</details>
+		<!-- /ko -->
 		<?php
 	}
 
-	public function updateSettings( Array $post )
+	public function updateSettings( Array $newSettings )
 	{
-		$data = $this->settings->get();
+		$settings = $this->settings->get();
 
-		$data[ "who" ] = $post[ $this->name ][ "who" ];
+		$settings[ "who" ] = $newSettings[ "who" ];
 
-		$this->settings->set( $data );
+		$this->settings->set( $settings );
 
-		parent::updateSettings( $post );
+		parent::updateSettings( $newSettings );
 	}
 }
