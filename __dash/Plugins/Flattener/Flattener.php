@@ -35,8 +35,11 @@ class Flattener extends AbstractShiftRefresh
 			$batch = $settings[ "batch" ];
 			$batch = str_replace( "\r\n", "\n", $batch );
 
+			$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings[ "flatoutputfolder" ] );
+			$outputFolder = $this->parseTokens( $outputFolder, $parameters );
+
 			$inputRelativeURLs = explode( "\n", $batch );
-			$outputFolder = $this->parseTokens( $settings[ "flatoutputfolder" ], $parameters );
+			$inputRelativeURLs = $this->dispatchEvent( "Flattener.inputRelativeURLs", $inputRelativeURLs );
 
 			foreach( $inputRelativeURLs as $rawInputRelativeURL )
 			{
@@ -68,7 +71,7 @@ class Flattener extends AbstractShiftRefresh
 
 		$inputRelativeURL = $_SERVER[ "REDIRECT_DOCUMENT_URI" ];
 
-		$outputFolder = $settings[ "flatoutputfolder" ];
+		$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings[ "flatoutputfolder" ] );
 		$outputFolder = $this->removeTokens( $outputFolder );
 		$outputFolder = $this->collapseSlashes( $outputFolder );
 
@@ -115,6 +118,7 @@ class Flattener extends AbstractShiftRefresh
 		$syncFolders = $settings[ "syncfolders" ];
 		$syncFolders = str_replace( "\r\n", "\n", $syncFolders );
 		$syncFolders = explode( "\n", $syncFolders );
+		$syncFolders = $this->dispatchEvent( "Flattener.syncFolders", $syncFolders );
 
 		foreach( $syncFolders as $configLine )
 		{

@@ -14,20 +14,26 @@ class Preparser extends AbstractCurl
 		$url = $this->getURL( $parameters );
 		$url .= ( strpos( $url, "?" ) === false ? "?" : "&" ) . self::SUBREQ . "=1&REQUEST_URI=" . $_SERVER[ "REQUEST_URI" ];
 
-		$this->preparse( $url );
+		$content = $this->dispatchEvent( "Preparser.beforeCurl", NULL, $parameters );
+
+		if( $content !== NULL )
+		{
+			echo $content;
+		}
+		else
+		{
+			$this->curlAndPreparse( $url );
+		}
 	}
 
-	private function preparse( $url )
+	private function curlAndPreparse( $url )
 	{
 		$result = $this->curl( $url );
 
 		if( $result[ "success" ] === true )
 		{
 			$this->repeatResponseHeaders( $result[ "header" ] );
-
-			$event = new Event( array(), $result[ "content" ] );
-			$this->dispatcher->dispatch( "PREPARSER", $event );
-			echo $event->getContent();
+			echo $this->dispatchEvent( "Preparser.afterCurl", $result[ "content" ] );
 		}
 
 		return $result[ "success" ];

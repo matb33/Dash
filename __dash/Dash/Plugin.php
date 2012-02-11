@@ -100,6 +100,13 @@ abstract class Plugin
 		}
 	}
 
+	protected function dispatchEvent( $eventName, $content = NULL, Array $parameters = array() )
+	{
+		$event = new Event( $parameters, $content );
+		$this->dispatcher->dispatch( $eventName, $event );
+		return $event->getContent();
+	}
+
 	private function rawEventsToArray( Array $existingEvents, $rawEvents )
 	{
 		$existingEvents = array();
