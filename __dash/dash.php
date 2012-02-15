@@ -25,13 +25,11 @@ $pluginManager = new Dash\PluginManager(
 // b) Show admin interface
 //=================================
 
-$rawParameters = ltrim( $_SERVER[ "PATH_INFO" ], "/" );
-$parameters = strlen( $rawParameters ) > 0 ? explode( "/", $rawParameters ) : array();
+$pluginName = trim( $_SERVER[ "PATH_INFO" ], "/" );
 
-if( count( $parameters ) > 0 )
+if( strlen( $pluginName ) > 0 )
 {
-	$pluginName = array_shift( $parameters );
-	$pluginManager->runPlugin( $pluginName, $parameters );
+	$pluginManager->runPlugin( $pluginName, $_GET );
 }
 else
 {

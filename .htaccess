@@ -14,4 +14,4 @@ RewriteRule ^-/(.*)$ /__dash/dash.php/$1 [L,QSA]
 RewriteRule Preparser - [L]
 RewriteCond %{QUERY_STRING} !PREPARSER_SUBREQ
 RewriteCond %{REQUEST_URI} !dash.php
-RewriteRule ^(.*\.html)$ /-/Preparser/$1 [L,QSA]
+RewriteRule ^(.*\.html)$ /-/Preparser?path=$1 [L,QSA]

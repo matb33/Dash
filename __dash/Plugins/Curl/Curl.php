@@ -37,11 +37,19 @@ class Curl extends AbstractCurl
 		return parent::curl( $url );
 	}
 
-	public function getURL( Array $parameters )
+	public function renderSettings()
 	{
-		array_pop( $parameters );
+		parent::renderSettings();
 
-		$path = "/" . implode( "/", $parameters );
-		return "http://" . $_SERVER[ "HTTP_HOST" ] . $path . "?" . $_SERVER[ "QUERY_STRING" ];
+		?><details>
+			<summary>Toggle examples</summary>
+			<p>cURL by path:
+				<code>/-/Curl?path=/index.html</code>
+			</p>
+			<p>cURL by fully-qualified URL:
+				<code>/-/Curl?url=http://www.website.com/index.html?qs=1</code>
+			</p>
+		</details>
+		<?php
 	}
 }

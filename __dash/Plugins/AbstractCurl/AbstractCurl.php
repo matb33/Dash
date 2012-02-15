@@ -11,7 +11,7 @@ abstract class AbstractCurl extends \Dash\Plugin
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $ch, CURLOPT_HEADER, true );
 		curl_setopt( $ch, CURLOPT_COOKIESESSION, false );
-		curl_setopt( $ch, CURLOPT_FAILONERROR, false );
+		curl_setopt( $ch, CURLOPT_FAILONERROR, true );
 		curl_setopt( $ch, CURLOPT_ENCODING, false );
 		curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
 		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
@@ -53,10 +53,10 @@ abstract class AbstractCurl extends \Dash\Plugin
 	{
 		$headers = explode( "\n", $header );
 
-		foreach( $headers as $line )
+		foreach( $headers as $index => $line )
 		{
-			// Only repeating content-type, otherwise we get some caching issues
-			if( strpos( strtolower( $line ), "content-type" ) !== false )
+			// Only repeating first header and content-type, otherwise we get some caching issues
+			if( $index === 0 || strpos( strtolower( $line ), "content-type" ) !== false )
 			{
 				header( $line );
 			}
@@ -65,9 +65,18 @@ abstract class AbstractCurl extends \Dash\Plugin
 
 	protected function getURL( Array $parameters )
 	{
-		$path = "/" . implode( "/", $parameters );
-		$path = "/" . str_replace( "@", "/", $path );
+		if( isset( $parameters[ "url" ] ) )
+		{
+			return $parameters[ "url" ];
+		}
+		else
+		{
+			$path = ltrim( $parameters[ "path" ], "/" );
+			unset( $parameters[ "path" ] );
 
-		return "http://" . $_SERVER[ "HTTP_HOST" ] . $path . "?" . $_SERVER[ "QUERY_STRING" ];
+			$query = http_build_query( $parameters );
+
+			return "http://" . $_SERVER[ "HTTP_HOST" ] . "/" . $path . ( strlen( $query ) > 0 ? "?" . $query : "" );
+		}
 	}
 }

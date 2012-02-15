@@ -18,8 +18,8 @@ class LESSCompiler extends AbstractShiftRefresh
 
 	public function run( Array $parameters )
 	{
-		$inputFile = implode( "/", $parameters );
-		$realInputFile = realpath( str_replace( ",", ".", $inputFile ) );
+		$inputFile = $parameters[ "file" ];
+		$realInputFile = realpath( $inputFile );
 
 		if( $realInputFile !== false )
 		{
@@ -149,6 +149,8 @@ class LESSCompiler extends AbstractShiftRefresh
 ../inc/styles/ultra-narrow.less.css => ../inc/cache/ultra-narrow.css
 ../inc/styles/narrow.less.css => ../inc/cache/narrow.css
 ../inc/styles/wide.less.css => ../inc/cache/wide.css</code></p>
+			<p>Example run usage:
+			<code>/-/LESSCompiler?file=../inc/styles/style.less.css</code></p>
 		</details>
 		<!-- /ko -->
 		<?php

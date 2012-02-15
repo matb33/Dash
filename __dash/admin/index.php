@@ -92,6 +92,16 @@ $pluginNames = $pluginManager->getPluginListFromFileSystem();
 			}
 			?>
 
+			// Details/Summary fallback
+			jQuery( document ).ready( function( $ ) {
+				if( !( "open" in document.createElement( "details" ) ) ) {
+					document.documentElement.className += " no-details";
+				}
+				$( ".no-details summary" ).live( "click", function() {
+					$( this ).closest( "details" ).children().not( "summary" ).toggle();
+				});
+			});
+
 		</script>
 		<style type="text/css">
 			<?php include "admin.css"; ?>

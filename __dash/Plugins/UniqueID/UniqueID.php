@@ -17,13 +17,17 @@ class UniqueID extends \Dash\Plugin
 
 	public function run( Array $parameters )
 	{
-		if( count( $parameters ) >= 1 && strtolower( $parameters[ 0 ] ) === "reset" )
+		$command = isset( $parameters[ "c" ] ) ? $parameters[ "c" ] : "";
+
+		switch( $command )
 		{
-			echo $this->resetID();
-		}
-		else
-		{
-			echo $this->getID();
+			case "reset":
+				echo $this->resetID();
+			break;
+
+			case "get":
+			default:
+				echo $this->getID();
 		}
 	}
 
@@ -47,5 +51,23 @@ class UniqueID extends \Dash\Plugin
 	private function setID( $id )
 	{
 		file_put_contents( $this->uniqueIDFile, $id );
+	}
+
+	public function renderSettings()
+	{
+		parent::renderSettings();
+
+		?><details>
+			<summary>Toggle examples</summary>
+			<p>Example run usage to reset the global unique ID:
+				<code>/-/UniqueID?c=reset</code>
+				<em>Note that a reset action occurs if UniqueID is set to listen to an event that is fired.</em>
+			</p>
+			<p>Example run usage to get the global unique ID:
+				<code>/-/UniqueID?c=get</code> or simply
+				<code>/-/UniqueID</code>
+			</p>
+		</details>
+		<?php
 	}
 }

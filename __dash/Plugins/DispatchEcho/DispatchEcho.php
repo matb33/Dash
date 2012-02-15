@@ -8,7 +8,7 @@ class DispatchEcho extends \Dash\Plugin
 {
 	public function run( Array $parameters )
 	{
-		$eventName = array_shift( $parameters );
+		$eventName = $parameters[ "e" ];
 
 		if( strlen( $eventName ) > 0 )
 		{
@@ -16,5 +16,16 @@ class DispatchEcho extends \Dash\Plugin
 			$this->dispatcher->dispatch( $eventName, $event );
 			echo $event->getContent();
 		}
+	}
+
+	public function renderSettings()
+	{
+		parent::renderSettings();
+
+		?><details>
+			<summary>Toggle examples</summary>
+			<code>/-/DispatchEcho?e=NameOfEvent</code>
+		</details>
+		<?php
 	}
 }

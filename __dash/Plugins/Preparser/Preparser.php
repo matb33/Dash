@@ -47,7 +47,7 @@ class Preparser extends AbstractCurl
 		<code>RewriteRule Preparser - [L]
 RewriteCond %{QUERY_STRING} !<?php echo self::SUBREQ . "\n"; ?>
 RewriteCond %{REQUEST_URI} !dash.php
-RewriteRule ^(.*\.html)$ /-/Preparser/$1 [L,QSA]</code>
+RewriteRule ^(.*\.html)$ /-/Preparser?path=$1 [L,QSA]</code>
 		<?php
 	}
 }

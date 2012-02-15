@@ -5,14 +5,20 @@ namespace Plugins\Flattener;
 use ErrorException;
 
 use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
+use Plugins\Curl\Curl;
 use Dash\Event;
 
 class Flattener extends AbstractShiftRefresh
 {
+	private $curl;
+
 	const SUBREQ = "FLATTENER_SUBREQ";
 
 	public function init()
 	{
+		// Until we get Traits in PHP 5.4, we'll create a private instance of the Curl plugin
+		$this->curl = new Curl();
+
 		if( ! $this->isFlattenerSubRequest() )
 		{
 			if( $this->isShiftRefresh() )
@@ -35,8 +41,10 @@ class Flattener extends AbstractShiftRefresh
 			$batch = $settings[ "batch" ];
 			$batch = str_replace( "\r\n", "\n", $batch );
 
+			$parts = $parameters[ "p" ];
+
 			$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings[ "flatoutputfolder" ] );
-			$outputFolder = $this->parseTokens( $outputFolder, $parameters );
+			$outputFolder = $this->parseTokens( $outputFolder, $parts );
 
 			$inputRelativeURLs = explode( "\n", $batch );
 			$inputRelativeURLs = $this->dispatchEvent( "Flattener.inputRelativeURLs", $inputRelativeURLs );
@@ -47,19 +55,30 @@ class Flattener extends AbstractShiftRefresh
 
 				if( strlen( $inputRelativeURL ) > 0 )
 				{
-					$inputRelativeURL = $this->parseTokens( $inputRelativeURL, $parameters );
+					$inputRelativeURL = $this->parseTokens( $inputRelativeURL, $parts );
 					$qsConjunction = ( strpos( $inputRelativeURL, "?" ) === false ? "?" : "&" );
 					$outputFile = parse_url( $inputRelativeURL, PHP_URL_PATH );
 
 					$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . $qsConjunction . self::SUBREQ . "=1";
 					$outputFile = $outputFolder . $outputFile;
 
-					echo "flatten url: " . $inputURL . ", path: " . $outputFile . "\n";
-					$this->fetchAndWrite( $inputURL, $outputFile );
+					echo "flatten url: " . $inputURL . ", path: " . $outputFile . " ";
+
+					try
+					{
+						$this->fetchAndWrite( $inputURL, $outputFile );
+						echo "[OK]";
+					}
+					catch( ErrorException $e )
+					{
+						echo "[ERR]";
+					}
+
+					echo "\n";
 				}
 			}
 
-			$this->syncFolders( $outputFolder, $parameters, true );
+			$this->syncFolders( $outputFolder, $parts, true );
 		}
 	}
 
@@ -92,26 +111,20 @@ class Flattener extends AbstractShiftRefresh
 			mkdir( $outPath, 0777, true );
 		}
 
-		$contents = $this->fileGetContents( $url );
+		$result = $this->curl->curl( $url );
 
-		file_put_contents( $outFile, $contents );
+		if( $result[ "success" ] === true && strpos( $result[ "header" ], "404" ) === false )
+		{
+			$contents = $result[ "content" ];
+			file_put_contents( $outFile, $contents );
+		}
+		else
+		{
+			throw new ErrorException( "Invalid input URL: " . $url );
+		}
 	}
 
-	private function fileGetContents( $filename )
-	{
-		try
-		{
-			$contents = file_get_contents( $filename );
-		}
-		catch( \Exception $e )
-		{
-			$contents = "";
-		}
-
-		return mb_convert_encoding( $contents, "UTF-8", mb_detect_encoding( $contents, "UTF-8, ISO-8859-1", true ) );
-	}
-
-	private function syncFolders( $outputFolder, $parameters, $debug = false )
+	private function syncFolders( $outputFolder, $parts, $debug = false )
 	{
 		$settings = $this->settings->get();
 
@@ -123,8 +136,8 @@ class Flattener extends AbstractShiftRefresh
 		foreach( $syncFolders as $configLine )
 		{
 			$rawFolders = explode( "=>", $configLine );
-			$syncFolder = $this->parseTokens( trim( $rawFolders[0] ), $parameters );
-			$syncDestination = $this->parseTokens( trim( $rawFolders[1] ), $parameters );
+			$syncFolder = $this->parseTokens( trim( $rawFolders[0] ), $parts );
+			$syncDestination = $this->parseTokens( trim( $rawFolders[1] ), $parts );
 
 			$realSyncFolder = realpath( $syncFolder );
 
@@ -150,10 +163,10 @@ class Flattener extends AbstractShiftRefresh
 		}
 	}
 
-	private function parseTokens( $content, Array $parameters )
+	private function parseTokens( $content, Array $parts )
 	{
 		// replace %1, %2, %3 in content with equivalent in parameters
-		foreach( $parameters as $index => $parameter )
+		foreach( $parts as $index => $parameter )
 		{
 			$content = str_replace( "%" . ( $index + 1 ), $parameter, $content );
 		}
@@ -218,6 +231,8 @@ class Flattener extends AbstractShiftRefresh
 /subscribe.html
 /terms.html
 /work.html</code></p>
+			<p>Example run usage with token parts (token parts are replaced with %1, %2, %3, etc):
+			<code>/-/Flattener?p[]=token1&p[]=token2</code></p>
 		</details>
 		<!-- /ko -->
 		<?php
