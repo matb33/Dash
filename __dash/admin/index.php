@@ -98,7 +98,17 @@ $pluginNames = $pluginManager->getPluginListFromFileSystem();
 					document.documentElement.className += " no-details";
 				}
 				$( ".no-details summary" ).live( "click", function() {
-					$( this ).closest( "details" ).children().not( "summary" ).toggle();
+					$( this ).closest( "details" ).each( function() {
+						var $this = $( this );
+
+						if( $this.attr( "open" ) ) {
+							$this.removeAttr( "open" );
+						} else {
+							$this.attr( "open", "open" );
+						}
+
+						$this.children().not( "summary" ).toggle()
+					});
 				});
 			});
 
@@ -109,8 +119,7 @@ $pluginNames = $pluginManager->getPluginListFromFileSystem();
 	</head>
 	<body>
 		<h1><em>Dash</em>: The development-side plugin framework</h1>
-		<h2>Administration Panel</h2>
-		<p>The plugins listed below are available for configuration:</p>
+		<h2>Plugin Configuration</h2>
 
 		<form method="post" action="">
 			<div class="plugins">
@@ -121,14 +130,16 @@ $pluginNames = $pluginManager->getPluginListFromFileSystem();
 					$instance = $pluginManager->getPluginInstance( $pluginName );
 
 					?><div class="plugin" data-bind="css: { 'is-enabled': <?php echo $instance->viewModel; ?>.enabled, 'is-disabled': !<?php echo $instance->viewModel; ?>.enabled() }">
-						<fieldset>
-							<legend><?php echo $pluginName; ?></legend>
+						<details>
+							<summary><?php echo $pluginName; ?></summary>
+							<div class="settings">
+								<?php $instance->renderSettings(); ?>
+							</div>
 							<div class="sync">
-								<button class="save" data-bind="click: <?php echo $instance->viewModel; ?>.save, disable: <?php echo $instance->viewModel; ?>.saving">Save</button>
+								<button class="save" data-bind="click: <?php echo $instance->viewModel; ?>.save, disable: <?php echo $instance->viewModel; ?>.saving">Save changes</button>
 								<div class="message" data-bind="text: <?php echo $instance->viewModel; ?>.message, css: { 'is-enabled': <?php echo $instance->viewModel; ?>.message }"></div>
 							</div>
-							<?php $instance->renderSettings(); ?>
-						</fieldset>
+						</details>
 					</div>
 					<?php
 				}

@@ -2,8 +2,9 @@
 * Reset
 ****************************/
 
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td { margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; }
-html { font-size: 16px; line-height: 18px; }
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, hgroup, menu, nav, section, menu, time, mark, audio, video { margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; overflow-y: scroll; }
+body { line-height: 1; }
 ol, ul { margin: 1em 0 1em 3em; }
 blockquote, q { quotes: none; }
 blockquote:before, blockquote:after, q:before, q:after { content: ''; content: none; }
@@ -11,40 +12,60 @@ blockquote:before, blockquote:after, q:before, q:after { content: ''; content: n
 ins { text-decoration: none; }
 del { text-decoration: line-through; }
 table { border-collapse: collapse; border-spacing: 0; }
-ol.layout, ul.layout, li.layout, ul.nav { list-style: none; margin: 0; padding: 0; background: transparent none no-repeat 0px 0px; }
+ol.layout, ul.layout, li.layout, ul.nav, nav ul { list-style: none; margin: 0; padding: 0; background: transparent none no-repeat 0px 0px; }
 input { margin: 0; }
+input, select { vertical-align: middle; }
 button { position: relative; cursor: pointer; overflow: visible; /* removes extra side padding in IE */ }
 button::-moz-focus-inner { border: none; /* overrides extra padding in Firefox */ }
+button span { position: relative; display: block; white-space: nowrap; }
+@media screen and (-webkit-min-device-pixel-ratio:0) { /* Safari and Google Chrome only - fix margins */ button span { margin-top: -1px; } }
 a img { vertical-align: middle; }
+em { font-style: italic; }
+strong { font-weight: bold; }
+abbr, article, aside, canvas, footer, header, hgroup, mark, menu, meter, nav, section, time { display: block; } /* html5 elements expected to be block */
+ins { background-color: #ff9; color: #000; text-decoration: none; }
+mark { background-color: #ff9; color: #000; font-style: italic; font-weight: bold; }
+del { text-decoration: line-through; }
+abbr[title], dfn[title] { border-bottom: 1px dotted #000; cursor: help; }
+input[type='submit'], input[type='button'] { cursor: pointer; }
+hr { display: block; height: 1px; border: 0; border-top: 1px solid #ccc; margin: 1em 0; padding: 0; }
+sup, sub { height: 0; line-height: 1; vertical-align: baseline; position: relative; }
+#ie6 sup, #ie6 sub { vertical-align: bottom; }
+sup { bottom: 1ex; }
+sub { top: .5ex; }
+pre { padding: 15px; white-space: pre; /* CSS2 */ white-space: pre-wrap; /* CSS 2.1 */ white-space: pre-line; /* CSS 3 (and 2.1 as well, actually) */ word-wrap: break-word; /* IE */ }
+/* align checkboxes, radios, text inputs with their label */
+input[type="radio"] { vertical-align: text-bottom; }
+#ie7 input[type="checkbox"] { vertical-align: baseline; }
+#ie6 input { vertical-align: text-bottom; }
+/* hand cursor on clickable input elements */
+label, input[type=button], input[type=submit], button { cursor: pointer; }
+/* bicubic resizing for non-native sized IMG */
+#ie7 img { -ms-interpolation-mode: bicubic; }
 .nowrap { white-space: nowrap; }
 .brand { white-space: nowrap; }
-em { font-style: italic; font-weight: normal; }
-strong { font-weight: bold; font-style: normal; }
-abbr, article, aside, canvas, footer, header, hgroup, mark, menu, meter, nav, section, time { display: block; } /* html5 elements expected to be block */
-input[type='submit'], input[type='button'] { cursor: pointer; }
-/* more precise sup/sub */
-sup, sub { height: 0; line-height: 1; font-size: 80%; position: relative; left: .1ex; vertical-align: baseline; }
 
 /****************************
 * Typography
 ****************************/
 
 body, input, textarea, select, button {
-	font: 100%/133% Georgia, Arial, Helvetica, sans-serif;
+	font: 100%/133% Arial, Helvetica, sans-serif;
 	color: #333333;
 }
 
 h1, h2, h3, h4, h5, h6 {
+	font-family: Georgia, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	margin-bottom: 20px;
 }
 
-h1 { font-size: 260%; line-height: 100%; }
-h2 { font-size: 175%; line-height: 100%; }
-h3 { font-size: 135%; line-height: 100%; }
-h4 { font-size: 100%; line-height: 100%; }
-h5 { font-size: 90%; line-height: 100%; }
-h6 { font-size: 80%; line-height: 100%; }
+h1 { font-size: 200%; line-height: 100%; }
+h2 { font-size: 140%; line-height: 100%; }
+h3 { font-size: 130%; line-height: 100%; }
+h4 { font-size: 120%; line-height: 100%; }
+h5 { font-size: 110%; line-height: 100%; }
+h6 { font-size: 105%; line-height: 100%; }
 
 p {
 	margin-bottom: 20px;
@@ -59,62 +80,126 @@ a { color: #c20909; text-decoration: underline; }
 a:hover { text-decoration: none; }
 
 /****************************
+* Base styles
+****************************/
+
+details { display: block; }
+.no-details summary ~ * { display: none; }
+.no-details summary:before { content: "► "; }
+.no-details details[open] > summary:before { content: "▼ "; }
+summary {
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+
+.hidden { position: absolute !important; left: -9999px !important; top: -9999px !important; opacity: 0; }
+.visible { position: static; opacity: 1; }
+
+button {
+	color: #ffffff;
+	padding: 5px 10px;
+	background: -moz-linear-gradient( top, #ffc821 0%, #ff3c00);
+	background: -webkit-gradient( linear, left top, left bottom, from(#ffc821), to(#ff3c00));
+	border-radius: 5px;
+	border: 1px solid #b85f00;
+	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px -1px 0px rgba(255,255,255,0.7);
+	text-shadow: 0px -1px 0px rgba(000,000,000,0.3);
+}
+
+button:active {
+	background: -moz-linear-gradient( top, #ff3c00 0%, #ffc821 25%, #fff3db);
+	background: -webkit-gradient( linear, left top, left bottom, from(#ff3c00), color-stop(0.25, #ffc821), to(#fff3db));
+}
+
+/****************************
 * Layout
 ****************************/
 
 body {
 	padding: 20px;
-	background-color: #f0f0f0;
+	background-color: #fff;
 }
+
+/****************************
+* All plugins container
+****************************/
 
 .plugins {
-	margin: 30px 0px;
-	overflow: hidden;
 }
 
-.plugin {
+/****************************
+* Single plugin container
+****************************/
+
+.plugin > details {
 	position: relative;
-	float: left;
-	width: 50%;
-}
-
-.plugin:nth-child(2n+1) {
-	clear: left;
-}
-
-fieldset {
-	background-color: #fff;
 	padding: 15px;
-	margin: 0px 20px 20px 0px;
-	border-radius: 10px;
-	border: 0px solid #000;
-	border-width: 2px;
+	overflow: hidden;
+
+	background-image: -o-linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
+	background-image: -moz-linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
+	background-image: -webkit-linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
+	background-image: -ms-linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
+	background-image: linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
+
+	border: 1px solid #fff;
+	border-color: #ccc #999 #999 #ccc;
+	border-radius: 5px;
+	margin-bottom: 5px;
+
+	box-shadow: 2px 2px 5px rgba( 0, 0, 0, 0.2 );
 }
 
-.is-disabled fieldset {
-	background-color: #f0f0f0;
-	border-color: #888;
+.plugin > details[open] {
+	margin-bottom: 30px;
 }
 
-.is-disabled * {
-	color: #888;
-}
+.plugin > details > summary {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	padding: 5px 0px 5px 5px;
+	display: block;
+	width: 100%;
 
-.is-disabled button,
-.is-disabled summary,
-button:disabled {
-	cursor: default;
-	background: none;
-	background-color: #ccc;
-	border-color: #aaa;
-}
-
-fieldset legend {
 	font-weight: bold;
-	font-size: 150%;
-	margin: 0px;
-	padding: 0px;
+	font-size: 100%;
+	text-shadow: 1px 1px 0px rgba(255,255,255,0.7);
 }
+
+.plugin > details[open] > summary {
+	background-color: #1f6db0;
+	color: #fff;
+	border-bottom: 1px solid #bbb;
+	text-shadow: 0px -1px 0px rgba(000,000,000,0.7);
+}
+
+/****************************
+* Disabled plugin styling
+****************************/
+
+.is-disabled summary {
+	background-color: #bbb !important;
+}
+
+.is-disabled,
+.is-disabled .settings summary,
+.is-disabled button {
+	color: #888 !important;
+	background: none !important;
+	background-color: #bbb !important;
+	border-color: #888 !important;
+}
+
+/****************************
+* Form/element styling
+****************************/
 
 label {
 	display: block;
@@ -137,25 +222,11 @@ label > span > em {
 	font-weight: normal;
 }
 
-.enabled {
-	position: absolute;
-	top: 20px;
-	right: 30px;
-	font-weight: normal;
-	margin-bottom: 10px;
-}
-
-.is-enabled .enabled {
-	color: #000;
-	font-style: italic;
-	background-color: #ff0;
-}
-
 code {
 	display: block;
 	white-space: pre;
 	border: 1px dashed #888;
-	background-color: #f0f0f0;
+	background-color: #fff;
 	padding: 10px;
 	margin-bottom: 10px;
 }
@@ -167,65 +238,76 @@ textarea {
 
 textarea,
 input[type='text'] {
-	width: 98%;
+	width: 100%;
 	font-family: Courier New;
 }
 
-button {
-	color: #ffffff;
-	padding: 5px 10px;
-	background: -moz-linear-gradient( top, #fff3db 0%, #ffc821 25%, #ff3c00);
-	background: -webkit-gradient( linear, left top, left bottom, from(#fff3db), color-stop(0.25, #ffc821), to(#ff3c00));
-	border-radius: 10px;
-	border: 1px solid #b85f00;
-	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px -1px 0px rgba(255,255,255,0.7);
+/****************************
+* Enable/disable plugin
+****************************/
+
+.enabled {
+	display: inline-block;
+	font-weight: normal;
+	margin-bottom: 10px;
+	padding: 5px;
+	border: 1px dashed #999;
+	border-radius: 5px;
 }
 
-button:active {
-	background: -moz-linear-gradient( top, #ff3c00 0%, #ffc821 25%, #fff3db);
-	background: -webkit-gradient( linear, left top, left bottom, from(#ff3c00), color-stop(0.25, #ffc821), to(#fff3db));
+.is-enabled .enabled {
+	color: #000;
+	border: 1px solid #999;
+	background-color: #fff;
 }
 
-details {
-	display: block;
+/****************************
+* Settings area
+****************************/
+
+.settings {
+	padding-top: 30px;
 }
 
-.no-details summary ~ * {
-	display: none;
-}
+/* Toggle buttons */
 
-summary {
+.settings summary {
 	display: inline-block;
 	color: #ffffff;
 	padding: 5px 10px;
 	background: -moz-linear-gradient( top, #42aaff 0%, #003366);
 	background: -webkit-gradient( linear, left top, left bottom, from(#42aaff), to(#003366));
-	border-radius: 10px;
+	border-radius: 5px;
 	border: 1px solid #003366;
 	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 1px rgba(255,255,255,0.5);
 	text-shadow: 0px -1px 0px rgba(000,000,000,0.7), 0px 1px 0px rgba(255,255,255,0.3);
-	cursor: pointer;
 	margin-bottom: 5px;
 }
 
-summary:active {
+.settings summary:active {
 	background: -moz-linear-gradient( top, #003366 0%, #42aaff);
 	background: -webkit-gradient( linear, left top, left bottom, from(#003366), to(#42aaff));
 }
 
+/****************************
+* Sync area:
+* - save button
+* - sync messaging
+****************************/
+
 .sync {
-	padding: 10px;
-	background-color: #eee;
-	border: 1px solid #ccc;
-	border-radius: 10px;
 	margin-top: 10px;
-	margin-bottom: 10px;
+	padding: 5px;
 	overflow: hidden; zoom: 1;
+	border: 1px solid #fff;
+	background-color: #fff;
+	border-radius: 5px;
+	border-color: #999 #ccc #ccc #999;
 }
 
 .sync .message {
 	display: none;
-	width: 80%;
+	width: 90%;
 	text-align: center;
 	font-weight: bold;
 	float: right;

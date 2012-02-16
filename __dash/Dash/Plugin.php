@@ -61,7 +61,7 @@ abstract class Plugin
 
 		<!-- ko with: <?php echo $this->viewModel; ?> -->
 		<label class="enabled">
-			<input type="checkbox" data-bind="checked: enabled" /> <span>Check to enable</span>
+			<input type="checkbox" data-bind="checked: enabled" /> <span data-bind="visible: enabled">Uncheck to disable</span><span data-bind="hidden: enabled">Check to enable</span>
 		</label>
 		<label class="events">
 			<span>Event config:<br /><em>Format: eventName[:priority],eventName[:priority] (example: bleh:10,blah:20,other)</em></span>
