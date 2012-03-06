@@ -3,15 +3,16 @@
 namespace Plugins\McMillanFix;
 
 use Dash\Event;
+use Dash\CommittableArrayObject;
 
 class McMillanFix extends \Dash\Plugin
 {
 	public function init()
 	{
-		$this->addListeners( array( $this, "parse" ) );
+		$this->addListeners( array( $this, "callback" ) );
 	}
 
-	public function parse( Event $event )
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
 		$content = $event->getContent();
 

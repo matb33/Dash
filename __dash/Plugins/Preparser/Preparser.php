@@ -11,9 +11,6 @@ class Preparser extends AbstractCurl
 
 	public function run( Array $parameters )
 	{
-		$url = $this->getURL( $parameters );
-		$url .= ( strpos( $url, "?" ) === false ? "?" : "&" ) . self::SUBREQ . "=1&REQUEST_URI=" . $_SERVER[ "REQUEST_URI" ];
-
 		$content = $this->dispatchEvent( "Preparser.beforeCurl", NULL, $parameters );
 
 		if( $content !== NULL )
@@ -22,6 +19,9 @@ class Preparser extends AbstractCurl
 		}
 		else
 		{
+			$url = $this->getURL( $parameters );
+			$url .= ( strpos( $url, "?" ) === false ? "?" : "&" ) . self::SUBREQ . "=1&REQUEST_URI=" . $_SERVER[ "REQUEST_URI" ];
+
 			$this->curlAndPreparse( $url );
 		}
 	}
@@ -39,15 +39,20 @@ class Preparser extends AbstractCurl
 		return $result[ "success" ];
 	}
 
-	public function renderSettings()
+	public function renderCommonSettings()
 	{
-		parent::renderSettings();
+		parent::renderCommonSettings();
 
 		?><p><em>Note: You must add/remove this block of Rewrite code to the .htaccess file to enable/disable the Preparser plugin:</em></p>
 		<code>RewriteRule Preparser - [L]
 RewriteCond %{QUERY_STRING} !<?php echo self::SUBREQ . "\n"; ?>
 RewriteCond %{REQUEST_URI} !dash.php
 RewriteRule ^(.*\.html)$ /-/Preparser?path=$1 [L,QSA]</code>
+		<h3>Events you can listen to:</h3>
+		<ul>
+			<li><strong>Preparser.beforeCurl</strong> : Fires before cURL request. Set content to non-NULL value to echo content and prevent cURL.</li>
+			<li><strong>Preparser.afterCurl</strong> : Fires after cURL request, allowing you to modify retrieved content. This is the main event hook you are probably looking to use.</li>
+		</ul>
 		<?php
 	}
 }

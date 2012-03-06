@@ -3,6 +3,7 @@
 namespace Plugins\UniqueID;
 
 use Dash\Event;
+use Dash\CommittableArrayObject;
 
 class UniqueID extends \Dash\Plugin
 {
@@ -31,7 +32,7 @@ class UniqueID extends \Dash\Plugin
 		}
 	}
 
-	public function callback( Event $event )
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
 		$this->resetID();
 	}
@@ -53,9 +54,9 @@ class UniqueID extends \Dash\Plugin
 		file_put_contents( $this->uniqueIDFile, $id );
 	}
 
-	public function renderSettings()
+	public function renderCommonSettings()
 	{
-		parent::renderSettings();
+		parent::renderCommonSettings();
 
 		?><details>
 			<summary>Toggle examples</summary>

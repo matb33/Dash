@@ -17,7 +17,6 @@ input { margin: 0; }
 input, select { vertical-align: middle; }
 button { position: relative; cursor: pointer; overflow: visible; /* removes extra side padding in IE */ }
 button::-moz-focus-inner { border: none; /* overrides extra padding in Firefox */ }
-button span { position: relative; display: block; white-space: nowrap; }
 @media screen and (-webkit-min-device-pixel-ratio:0) { /* Safari and Google Chrome only - fix margins */ button span { margin-top: -1px; } }
 a img { vertical-align: middle; }
 em { font-style: italic; }
@@ -60,7 +59,7 @@ h1, h2, h3, h4, h5, h6 {
 	margin-bottom: 20px;
 }
 
-h1 { font-size: 200%; line-height: 100%; }
+h1 { font-size: 160%; line-height: 100%; }
 h2 { font-size: 140%; line-height: 100%; }
 h3 { font-size: 130%; line-height: 100%; }
 h4 { font-size: 120%; line-height: 100%; }
@@ -98,10 +97,7 @@ summary {
 	user-select: none;
 }
 
-.hidden { position: absolute !important; left: -9999px !important; top: -9999px !important; opacity: 0; }
-.visible { position: static; opacity: 1; }
-
-button {
+button.save {
 	color: #ffffff;
 	padding: 5px 10px;
 	background: -moz-linear-gradient( top, #ffc821 0%, #ff3c00);
@@ -112,7 +108,7 @@ button {
 	text-shadow: 0px -1px 0px rgba(000,000,000,0.3);
 }
 
-button:active {
+button.save:active {
 	background: -moz-linear-gradient( top, #ff3c00 0%, #ffc821 25%, #fff3db);
 	background: -webkit-gradient( linear, left top, left bottom, from(#ff3c00), color-stop(0.25, #ffc821), to(#fff3db));
 }
@@ -139,14 +135,15 @@ body {
 
 .plugin > details {
 	position: relative;
-	padding: 15px;
+	padding: 8px;
 	overflow: hidden;
+	min-height: 16px;
 
-	background-image: -o-linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
-	background-image: -moz-linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
-	background-image: -webkit-linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
-	background-image: -ms-linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
-	background-image: linear-gradient(right , rgb(220,220,220) 0%, rgb(240,240,240) 100%);
+	background-image: -o-linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
+	background-image: -moz-linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
+	background-image: -webkit-linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
+	background-image: -ms-linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
+	background-image: linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
 
 	border: 1px solid #fff;
 	border-color: #ccc #999 #999 #ccc;
@@ -154,10 +151,6 @@ body {
 	margin-bottom: 5px;
 
 	box-shadow: 2px 2px 5px rgba( 0, 0, 0, 0.2 );
-}
-
-.plugin > details[open] {
-	margin-bottom: 30px;
 }
 
 .plugin > details > summary {
@@ -190,11 +183,135 @@ body {
 
 .is-disabled,
 .is-disabled .settings summary,
-.is-disabled button {
+.is-disabled .save {
 	color: #888 !important;
 	background: none !important;
 	background-color: #bbb !important;
 	border-color: #888 !important;
+}
+
+/****************************
+* Tabs area (settings)
+****************************/
+
+ul.tabs,
+ul.settings {
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+ul.tabs {
+	padding-top: 30px;
+}
+
+ul.tabs li {
+	float: left;
+	margin-right: 2px;
+	border: 0px solid #000;
+	border-color: #eee #bbb #bbb #eee;
+	border-width: 1px 1px 0px 1px;
+	background-color: #dddddd;
+}
+
+ul.tabs li:first-child {
+	margin-left: 10px;
+}
+
+ul.tabs li.target {
+	background-color: #f6f6f6;
+}
+
+ul.tabs li button {
+	display: block;
+	border: 0px;
+	background-color: transparent;
+	text-decoration: none;
+	color: #000;
+	font-size: 90%;
+	padding: 5px 10px;
+	color: #666;
+}
+
+ul.tabs li.target button {
+	color: #000;
+}
+
+ul.settings {
+	clear: both;
+	background-color: #fff;
+	border-color: #ccc #999 #999 #ccc;
+	border-width: 0px 1px 1px 1px;
+	border-style: solid;
+	background-color: #f6f6f6;
+	padding: 10px;
+}
+
+ul.settings > li {
+	display: none;
+}
+
+ul.settings > li.target {
+	display: block;
+}
+
+/* Event name/priority form fields */
+
+ul.settings label.event {
+	clear: none;
+	float: left;
+}
+
+ul.settings label.event.name {
+	width: 300px;
+	margin-right: 10px;
+}
+
+ul.settings label.event.priority {
+	width: 60px;
+	margin-right: 50px;
+}
+
+ul.settings label.event.delete {
+	margin-top: 1.2em;
+	float: right;
+}
+
+/* Toggle buttons */
+
+ul.settings summary {
+	display: inline-block;
+	color: #ffffff;
+	padding: 5px 10px;
+	background: -moz-linear-gradient( top, #42aaff 0%, #003366);
+	background: -webkit-gradient( linear, left top, left bottom, from(#42aaff), to(#003366));
+	border-radius: 5px;
+	border: 1px solid #003366;
+	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 1px rgba(255,255,255,0.5);
+	text-shadow: 0px -1px 0px rgba(000,000,000,0.7), 0px 1px 0px rgba(255,255,255,0.3);
+	margin-bottom: 5px;
+}
+
+ul.settings summary:active {
+	background: -moz-linear-gradient( top, #003366 0%, #42aaff);
+	background: -webkit-gradient( linear, left top, left bottom, from(#003366), to(#42aaff));
+}
+
+/* Enable/disable plugin */
+
+.enabled {
+	display: inline-block;
+	font-weight: normal;
+	margin-bottom: 10px;
+	padding: 5px;
+	border: 1px dashed #999;
+	border-radius: 5px;
+}
+
+.is-enabled .enabled {
+	color: #000;
+	border: 1px solid #999;
+	background-color: #fff;
 }
 
 /****************************
@@ -233,60 +350,13 @@ code {
 
 textarea {
 	white-space: nowrap;
-	height: 300px;
+	height: 200px;
 }
 
 textarea,
 input[type='text'] {
 	width: 100%;
 	font-family: Courier New;
-}
-
-/****************************
-* Enable/disable plugin
-****************************/
-
-.enabled {
-	display: inline-block;
-	font-weight: normal;
-	margin-bottom: 10px;
-	padding: 5px;
-	border: 1px dashed #999;
-	border-radius: 5px;
-}
-
-.is-enabled .enabled {
-	color: #000;
-	border: 1px solid #999;
-	background-color: #fff;
-}
-
-/****************************
-* Settings area
-****************************/
-
-.settings {
-	padding-top: 30px;
-}
-
-/* Toggle buttons */
-
-.settings summary {
-	display: inline-block;
-	color: #ffffff;
-	padding: 5px 10px;
-	background: -moz-linear-gradient( top, #42aaff 0%, #003366);
-	background: -webkit-gradient( linear, left top, left bottom, from(#42aaff), to(#003366));
-	border-radius: 5px;
-	border: 1px solid #003366;
-	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 1px rgba(255,255,255,0.5);
-	text-shadow: 0px -1px 0px rgba(000,000,000,0.7), 0px 1px 0px rgba(255,255,255,0.3);
-	margin-bottom: 5px;
-}
-
-.settings summary:active {
-	background: -moz-linear-gradient( top, #003366 0%, #42aaff);
-	background: -webkit-gradient( linear, left top, left bottom, from(#003366), to(#42aaff));
 }
 
 /****************************

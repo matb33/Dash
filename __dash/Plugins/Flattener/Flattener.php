@@ -1,12 +1,15 @@
 <?php
 
+// TODO: write two sets of configs, one for Common and another for Event
+
 namespace Plugins\Flattener;
 
 use ErrorException;
 
+use Dash\Event;
+use Dash\CommittableArrayObject;
 use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
 use Plugins\Curl\Curl;
-use Dash\Event;
 
 class Flattener extends AbstractShiftRefresh
 {
@@ -19,13 +22,7 @@ class Flattener extends AbstractShiftRefresh
 		// Until we get Traits in PHP 5.4, we'll create a private instance of the Curl plugin
 		$this->curl = new Curl();
 
-		if( ! $this->isFlattenerSubRequest() )
-		{
-			if( $this->isShiftRefresh() )
-			{
-				$this->addListeners( array( $this, "flatten" ) );
-			}
-		}
+		$this->addListeners( array( $this, "callback" ) );
 	}
 
 	public function run( Array $parameters )
@@ -34,72 +31,103 @@ class Flattener extends AbstractShiftRefresh
 		{
 			header( "Content-type: text/plain" );
 
-			// Batch functionality
+			$settings = $this->getCommonSettings();
 
-			$settings = $this->settings->get();
-
-			$batch = $settings[ "batch" ];
+			$batch = $settings->offsetGet( "batch" );
 			$batch = str_replace( "\r\n", "\n", $batch );
 
 			$parts = $parameters[ "p" ];
 
-			$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings[ "flatoutputfolder" ] );
+			$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings->offsetGet( "flatoutputfolder" ) );
 			$outputFolder = $this->parseTokens( $outputFolder, $parts );
 
 			$inputRelativeURLs = explode( "\n", $batch );
 			$inputRelativeURLs = $this->dispatchEvent( "Flattener.inputRelativeURLs", $inputRelativeURLs );
 
-			foreach( $inputRelativeURLs as $rawInputRelativeURL )
-			{
-				$inputRelativeURL = trim( $rawInputRelativeURL );
+			$this->batchFlatten( $inputRelativeURLs, $outputFolder, $parts, true );
+			$this->syncFolders( $settings, $outputFolder, $parts, true );
 
-				if( strlen( $inputRelativeURL ) > 0 )
-				{
-					$inputRelativeURL = $this->parseTokens( $inputRelativeURL, $parts );
-					$qsConjunction = ( strpos( $inputRelativeURL, "?" ) === false ? "?" : "&" );
-					$outputFile = parse_url( $inputRelativeURL, PHP_URL_PATH );
-
-					$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . $qsConjunction . self::SUBREQ . "=1";
-					$outputFile = $outputFolder . $outputFile;
-
-					echo "flatten url: " . $inputURL . ", path: " . $outputFile . " ";
-
-					try
-					{
-						$this->fetchAndWrite( $inputURL, $outputFile );
-						echo "[OK]";
-					}
-					catch( ErrorException $e )
-					{
-						echo "[ERR]";
-					}
-
-					echo "\n";
-				}
-			}
-
-			$this->syncFolders( $outputFolder, $parts, true );
+			$this->dispatchEvent( "Flattener.allComplete", NULL, array( "outputFolder" => $outputFolder, "batch" => $batch, "inputRelativeURLs" => $inputRelativeURLs ) );
 		}
 	}
 
-	public function flatten( Event $event )
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
-		// Single functionality
+		if( ! $this->isFlattenerSubRequest() )
+		{
+			if( $this->testShiftRefresh( $settings ) )
+			{
+				$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings->offsetGet( "flatoutputfolder" ) );
+				$outputFolder = $this->removeTokens( $outputFolder );
 
-		$settings = $this->settings->get();
+				$batch = $settings->offsetGet( "batch" );
+				$batch = trim( str_replace( "\r\n", "\n", $batch ) );
 
-		$inputRelativeURL = $_SERVER[ "REDIRECT_DOCUMENT_URI" ];
+				$inputRelativeURL = $inputRelativeURLs = NULL;
 
-		$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings[ "flatoutputfolder" ] );
-		$outputFolder = $this->removeTokens( $outputFolder );
-		$outputFolder = $this->collapseSlashes( $outputFolder );
+				if( strlen( $batch ) > 0 )
+				{
+					$inputRelativeURLs = explode( "\n", $batch );
+					$inputRelativeURLs = $this->dispatchEvent( "Flattener.inputRelativeURLs", $inputRelativeURLs );
 
-		$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . "?" . self::SUBREQ . "=1";
-		$outputFile = $outputFolder . $inputRelativeURL;
+					$this->batchFlatten( $inputRelativeURLs, $outputFolder );
+					$this->syncFolders( $settings, $outputFolder );
+				}
+				else
+				{
+					$inputRelativeURL = $_SERVER[ "REDIRECT_DOCUMENT_URI" ];
+					$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . "?" . self::SUBREQ . "=1";
+					$outputFile = $outputFolder . $inputRelativeURL;
 
-		$this->fetchAndWrite( $inputURL, $outputFile );
+					$this->fetchAndWrite( $inputURL, $outputFile );
+					$this->syncFolders( $settings, $outputFolder );
+				}
 
-		$this->syncFolders( $outputFolder, $event->getParameters(), false );
+				$this->dispatchEvent( "Flattener.allComplete", NULL, array( "outputFolder" => $outputFolder, "batch" => $batch, "inputRelativeURLs" => $inputRelativeURLs, "inputRelativeURL" => $inputRelativeURL ) );
+			}
+		}
+	}
+
+	private function batchFlatten( Array $inputRelativeURLs, $outputFolder, Array $parts = array(), $echo = false )
+	{
+		foreach( $inputRelativeURLs as $rawInputRelativeURLSet )
+		{
+			$rawInputRelativeURL = $this->parseTokens( trim( $rawInputRelativeURLSet ), $parts );
+
+			if( strlen( $rawInputRelativeURL ) > 0 )
+			{
+				if( strpos( $rawInputRelativeURL, "=>" ) !== false )
+				{
+					list( $inputRelativeURL, $outputFile ) = explode( "=>", $rawInputRelativeURL );
+
+					$inputRelativeURL = trim( $inputRelativeURL );
+					$outputFile = "/" . ltrim( trim( $outputFile ), "/" );
+				}
+				else
+				{
+					$inputRelativeURL = $rawInputRelativeURL;
+					$outputFile = parse_url( $inputRelativeURL, PHP_URL_PATH );
+				}
+
+				$qsConjunction = ( strpos( $inputRelativeURL, "?" ) === false ? "?" : "&" );
+				$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . $qsConjunction . self::SUBREQ . "=1";
+				$outputFile = $outputFolder . $outputFile;
+
+				if( $echo ) echo "flatten url: " . $inputURL . ", path: " . $outputFile . " ";
+
+				try
+				{
+					$this->fetchAndWrite( $inputURL, $outputFile );
+					if( $echo ) echo "[OK]";
+				}
+				catch( ErrorException $e )
+				{
+					if( $echo ) echo "[ERR]";
+				}
+
+				if( $echo ) echo "\n";
+			}
+		}
 	}
 
 	private function fetchAndWrite( $url, $outFile )
@@ -111,12 +139,15 @@ class Flattener extends AbstractShiftRefresh
 			mkdir( $outPath, 0777, true );
 		}
 
+		$this->curl->addHeader( "Cache-Control: no-cache" );
 		$result = $this->curl->curl( $url );
 
 		if( $result[ "success" ] === true && strpos( $result[ "header" ], "404" ) === false )
 		{
-			$contents = $result[ "content" ];
-			file_put_contents( $outFile, $contents );
+			$content = $result[ "content" ];
+			$content = $this->dispatchEvent( "Flattener.curlContent", $content, array( "url" => $url, "outPath" => $outPath, "outFile" => $outFile ) );
+			if( $content !== NULL ) file_put_contents( $outFile, $content );
+			$this->dispatchEvent( "Flattener.curlComplete", NULL, array( "url" => $url, "outPath" => $outPath, "outFile" => $outFile ) );
 		}
 		else
 		{
@@ -124,11 +155,9 @@ class Flattener extends AbstractShiftRefresh
 		}
 	}
 
-	private function syncFolders( $outputFolder, $parts, $debug = false )
+	private function syncFolders( CommittableArrayObject $settings, $outputFolder, Array $parts = array(), $echo = false )
 	{
-		$settings = $this->settings->get();
-
-		$syncFolders = $settings[ "syncfolders" ];
+		$syncFolders = $settings->offsetGet( "syncfolders" );
 		$syncFolders = str_replace( "\r\n", "\n", $syncFolders );
 		$syncFolders = explode( "\n", $syncFolders );
 		$syncFolders = $this->dispatchEvent( "Flattener.syncFolders", $syncFolders );
@@ -139,22 +168,48 @@ class Flattener extends AbstractShiftRefresh
 			$syncFolder = $this->parseTokens( trim( $rawFolders[0] ), $parts );
 			$syncDestination = $this->parseTokens( trim( $rawFolders[1] ), $parts );
 
-			$realSyncFolder = realpath( $syncFolder );
+			$realSyncInput = realpath( $syncFolder );
 
-			if( $realSyncFolder !== false )
+			if( $realSyncInput !== false )
 			{
+				$inputIsFile = is_file( $realSyncInput );
+
+				if( $inputIsFile )
+				{
+					$syncOutputFile = basename( $syncDestination );
+					$syncDestination = dirname( $syncDestination );
+				}
+
 				if( ! file_exists( $syncDestination ) )
 				{
-					if( $debug ) echo "mkdir " . $syncDestination . "\n";
+					if( $echo ) echo "mkdir " . $syncDestination . "\n";
 					mkdir( $syncDestination, 0777, true );
 				}
 
 				$realSyncDestination = realpath( $syncDestination );
 
-				$command = "robocopy \"" . $realSyncFolder . "\" \"" . $realSyncDestination . "\" /PURGE /S /XD .svn";
+				if( $inputIsFile )
+				{
+					$realSyncDestination = $realSyncDestination . DIRECTORY_SEPARATOR . $syncOutputFile;
+					$command = "copy /y \"" . $realSyncInput . "\" \"" . $realSyncDestination . "\"";
+				}
+				else
+				{
+					$command = "robocopy \"" . $realSyncInput . "\" \"" . $realSyncDestination . "\" /PURGE /S /NJH /NJS /XD .svn";
+				}
 
-				if( $debug ) echo $command . "\n";
-				exec( $command );
+				if( $echo ) echo $command . "\n";
+
+				// $t1 = microtime( true );
+				if( $echo )
+				{
+					system( $command );
+				}
+				else
+				{
+					exec( $command );
+				}
+				// echo ( microtime( true ) - $t1 ) . " seconds elapsed";
 			}
 			else
 			{
@@ -171,13 +226,18 @@ class Flattener extends AbstractShiftRefresh
 			$content = str_replace( "%" . ( $index + 1 ), $parameter, $content );
 		}
 
+		$content = $this->collapseSlashes( $content );
+
 		return $content;
 	}
 
 	private function removeTokens( $content )
 	{
 		// remove all %1, %2, %3 tokens
-		return preg_replace( "/%\d+/", "", $content );
+		$content = preg_replace( "/%\d+/", "", $content );
+		$content = $this->collapseSlashes( $content );
+
+		return $content;
 	}
 
 	private function collapseSlashes( $content )
@@ -185,42 +245,56 @@ class Flattener extends AbstractShiftRefresh
 		return preg_replace( "#([/\\\])[/\\\]+#", "\1", $content );
 	}
 
-	public function renderSettings()
+	private function isFlattenerSubRequest()
 	{
-		parent::renderSettings();
+		return strpos( $_SERVER[ "REQUEST_URI" ], self::SUBREQ ) !== false;
+	}
 
-		$settings = $this->settings->get();
+	public function renderCommonObservables( CommittableArrayObject $settings )
+	{
+		parent::renderCommonObservables( $settings );
 
-		if( ! isset( $settings[ "flatoutputfolder" ] ) ) $settings[ "flatoutputfolder" ] = "";
-		if( ! isset( $settings[ "syncfolders" ] ) ) $settings[ "syncfolders" ] = "";
-		if( ! isset( $settings[ "batch" ] ) ) $settings[ "batch" ] = "";
+		if( ! $settings->offsetExists( "flatoutputfolder" ) ) $settings->offsetSet( "flatoutputfolder", "" );
+		if( ! $settings->offsetExists( "syncfolders" ) ) $settings->offsetSet( "syncfolders", "" );
+		if( ! $settings->offsetExists( "batch" ) ) $settings->offsetSet( "batch", "" );
 
-		?><script type="text/javascript">
-			<?php echo $this->viewModel; ?>.flatoutputfolder = ko.observable( <?php echo json_encode( $settings[ "flatoutputfolder" ] ); ?> );
-			<?php echo $this->viewModel; ?>.syncfolders = ko.observable( <?php echo json_encode( $settings[ "syncfolders" ] ); ?> );
-			<?php echo $this->viewModel; ?>.batch = ko.observable( <?php echo json_encode( $settings[ "batch" ] ); ?> );
-		</script>
+		?>flatoutputfolder: ko.observable( <?php echo json_encode( $settings->offsetGet( "flatoutputfolder" ) ); ?> ),
+		syncfolders: ko.observable( <?php echo json_encode( $settings->offsetGet( "syncfolders" ) ); ?> ),
+		batch: ko.observable( <?php echo json_encode( $settings->offsetGet( "batch" ) ); ?> ),
+		<?php
+	}
 
-		<!-- ko with: <?php echo $this->viewModel; ?> -->
-		<details>
-			<summary>Toggle advanced</summary>
-			<label>
-				<span>Destination folder for flattened files<br /><em>Relative to dash.php<br />%1, %2, %3 etc act as parameter tokens</em></span>
-				<input type="text" data-bind="value: flatoutputfolder" />
-			</label>
-			<label>
-				<span>Folders to be sync'd as-is (using robocopy)<br /><em>Specify one per line, relative to dash.php</em></span>
-				<textarea data-bind="value: syncfolders"></textarea>
-			</label>
-			<label>
-				<span>Registered files for batch flatten (optional)<br /><em>Specify absolute paths (without host)</em></span>
-				<textarea data-bind="value: batch"></textarea>
-			</label>
-		</details>
+	public function renderCommonSettings()
+	{
+		parent::renderCommonSettings();
+
+		?><p>These settings apply when running manually: <code>/-/Flattener?p[]=token1&p[]=token2</code></p>
+		<label>
+			<span>Destination folder for flattened files<br /><em>Relative to dash.php<br />%1, %2, %3 etc act as parameter tokens</em></span>
+			<input type="text" data-bind="value: flatoutputfolder" />
+		</label>
+		<label>
+			<span>Folders to be sync'd as-is (via robocopy). Single files are supported (via copy).<br /><em>Specify one per line, relative to dash.php</em></span>
+			<textarea data-bind="value: syncfolders"></textarea>
+		</label>
+		<label>
+			<span>Registered URL paths for batch flatten<br /><em>Specify absolute paths (without host)</em></span>
+			<textarea data-bind="value: batch"></textarea>
+		</label>
+		<h3>Events you can listen to:</h3>
+		<ul>
+			<li><strong>Flattener.outputFolder</strong> : Allows you to modify the outputFolder.</li>
+			<li><strong>Flattener.inputRelativeURLs</strong> : Allows you to modify the inputRelativeURLs.</li>
+			<li><strong>Flattener.syncFolders</strong> : Allows you to modify the syncFolders.</li>
+			<li><strong>Flattener.curlContent</strong> : Allows you to modify the retrieved content for each file the flattener processes. Parameters passed are "url", "outPath" and "outFile".</li>
+			<li><strong>Flattener.curlComplete</strong> : Allows you to chain another event after the flattener has processed a particular file. Content not available for modification, but file is written to disk. Parameters passed are "url", "outPath" and "outFile".</li>
+			<li><strong>Flattener.allComplete</strong> : Allows you to chain another event after the flattener has finished all flattening. Parameters passed are "outputFolder", "batch", "inputRelativeURLs" and/or "inputRelativeURL".</li>
+		</ul>
 		<details>
 			<summary>Toggle examples</summary>
-			<p>Example destination folder: <code>../../flat</code></p>
-			<p>Example as-is sync folders: <code>../inc</code></p>
+			<p>Example destination folder: <code>../../flat/%1</code></p>
+			<p>Example as-is sync folders: <code>../inc => ../../flat/%1/inc
+../pub => ../../flat/%1/public</code></p>
 			<p>Example batch flatten:
 			<code>/about.html
 /careers.html
@@ -228,31 +302,54 @@ class Flattener extends AbstractShiftRefresh
 /error.html
 /index.html
 /people.html
-/subscribe.html
+/subscribe.html => /subscription.html
 /terms.html
 /work.html</code></p>
 			<p>Example run usage with token parts (token parts are replaced with %1, %2, %3, etc):
 			<code>/-/Flattener?p[]=token1&p[]=token2</code></p>
 		</details>
-		<!-- /ko -->
 		<?php
 	}
 
-	public function updateSettings( Array $newSettings )
+	public function renderEventObservables( CommittableArrayObject $settings )
 	{
-		$settings = $this->settings->get();
+		parent::renderEventObservables( $settings );
 
-		$settings[ "flatoutputfolder" ] = $newSettings[ "flatoutputfolder" ];
-		$settings[ "syncfolders" ] = $newSettings[ "syncfolders" ];
-		$settings[ "batch" ] = $newSettings[ "batch" ];
+		if( ! $settings->offsetExists( "flatoutputfolder" ) ) $settings->offsetSet( "flatoutputfolder", "" );
+		if( ! $settings->offsetExists( "syncfolders" ) ) $settings->offsetSet( "syncfolders", "" );
+		if( ! $settings->offsetExists( "batch" ) ) $settings->offsetSet( "batch", "" );
 
-		$this->settings->set( $settings );
-
-		parent::updateSettings( $newSettings );
+		?>flatoutputfolder: ko.observable( <?php echo json_encode( $settings->offsetGet( "flatoutputfolder" ) ); ?> ),
+		syncfolders: ko.observable( <?php echo json_encode( $settings->offsetGet( "syncfolders" ) ); ?> ),
+		batch: ko.observable( <?php echo json_encode( $settings->offsetGet( "batch" ) ); ?> ),
+		<?php
 	}
 
-	private function isFlattenerSubRequest()
+	public function renderEventSettings()
 	{
-		return strpos( $_SERVER[ "REQUEST_URI" ], self::SUBREQ ) !== false;
+		parent::renderEventSettings();
+
+		?><label>
+			<span>Destination folder for flattened file<br /><em>Relative to dash.php</em></span>
+			<input type="text" data-bind="value: flatoutputfolder" />
+		</label>
+		<label>
+			<span>Folders to be sync'd as-is (via robocopy). Single files are supported (via copy).<br /><em>Specify one per line, relative to dash.php</em></span>
+			<textarea data-bind="value: syncfolders"></textarea>
+		</label>
+		<label>
+			<span>Specify URL paths to batch flatten. Leave empty to flatten current path in context<br /><em>Specify absolute paths (without host)</em></span>
+			<textarea data-bind="value: batch"></textarea>
+		</label>
+		<details>
+			<summary>Toggle examples</summary>
+			<p>Example destination folder: <code>../../flat</code></p>
+			<p>Example as-is sync folders: <code>../inc => ../../flat/inc</code></p>
+			<p>Example batch flatten:
+			<code>/error.html
+/landing.html => /index.html
+</code></p>
+		</details>
+		<?php
 	}
 }

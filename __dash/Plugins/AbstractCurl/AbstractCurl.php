@@ -4,14 +4,18 @@ namespace Plugins\AbstractCurl;
 
 abstract class AbstractCurl extends \Dash\Plugin
 {
+	private $additionalHeaders = array();
+
 	protected function curl( $url )
 	{
+		set_time_limit( 0 );
+	
 		$ch = curl_init();
 
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $ch, CURLOPT_HEADER, true );
 		curl_setopt( $ch, CURLOPT_COOKIESESSION, false );
-		curl_setopt( $ch, CURLOPT_FAILONERROR, true );
+		curl_setopt( $ch, CURLOPT_FAILONERROR, false );
 		curl_setopt( $ch, CURLOPT_ENCODING, false );
 		curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
 		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
@@ -46,6 +50,8 @@ abstract class AbstractCurl extends \Dash\Plugin
 			$headers[] = $key . ": " . $value;
 		}
 
+		$headers = array_merge( $headers, $this->additionalHeaders );
+
 		return $headers;
 	}
 
@@ -61,6 +67,11 @@ abstract class AbstractCurl extends \Dash\Plugin
 				header( $line );
 			}
 		}
+	}
+
+	protected function addHeader( $header )
+	{
+		$this->additionalHeaders[] = $header;
 	}
 
 	protected function getURL( Array $parameters )

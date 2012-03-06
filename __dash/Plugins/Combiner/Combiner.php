@@ -4,6 +4,8 @@ namespace Plugins\Combiner;
 
 use ErrorException;
 
+use Dash\Event;
+use Dash\CommittableArrayObject;
 use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
 use Plugins\Curl\Curl;
 
@@ -13,82 +15,81 @@ class Combiner extends AbstractShiftRefresh
 
 	public function init()
 	{
-		if( $this->isShiftRefresh() )
-		{
-			// Until we get Traits in PHP 5.4, we'll create a private instance of the Curl plugin
-			$this->curl = new Curl();
+		// Until we get Traits in PHP 5.4, we'll create a private instance of the Curl plugin
+		$this->curl = new Curl();
 
-			$this->addListeners( array( $this, "combine" ) );
-		}
+		$this->addListeners( array( $this, "callback" ) );
 	}
 
-	public function combine()
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
-		$settings = $this->settings->get();
-		$config = $settings[ "configuration" ];
-		$config = str_replace( "\r\n", "\n", $config );
-		$basePath = dirname( $_SERVER[ "SCRIPT_FILENAME" ] );
-
-		$sets = explode( "\n\n", trim( $config ) );
-
-		foreach( $sets as $set )
+		if( $this->testShiftRefresh( $settings ) )
 		{
-			$params = explode( "=", trim( $set ), 2 );
+			$config = $settings->offsetGet( "configuration" );
+			$config = str_replace( "\r\n", "\n", $config );
+			$basePath = dirname( $_SERVER[ "SCRIPT_FILENAME" ] );
 
-			if( count( $params ) === 2 )
+			$sets = explode( "\n\n", trim( $config ) );
+
+			foreach( $sets as $set )
 			{
-				$rawInputFiles = trim( $params[ 0 ] );
-				$targetFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 1 ] ) );
+				$params = explode( "=", trim( $set ), 2 );
 
-				$inputFiles = explode( "+", $rawInputFiles );
-				$contents = "";
-
-				foreach( $inputFiles as $rawInputFile )
+				if( count( $params ) === 2 )
 				{
-					$inputContents = "";
+					$rawInputFiles = trim( $params[ 0 ] );
+					$targetFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 1 ] ) );
 
-					if( strpos( $rawInputFile, "//" ) )
+					$inputFiles = explode( "+", $rawInputFiles );
+					$contents = "";
+
+					foreach( $inputFiles as $rawInputFile )
 					{
-						// Read from URL
-						$url = trim( str_replace( ":///", "://" . $_SERVER[ "HTTP_HOST" ] . "/", $rawInputFile ) );
-						$result = $this->curl->curl( $url );
+						$inputContents = "";
 
-						if( $result[ "success" ] === true )
+						if( strpos( $rawInputFile, "//" ) )
 						{
-							$inputContents = $result[ "content" ];
+							// Read from URL
+							$url = trim( str_replace( ":///", "://" . $_SERVER[ "HTTP_HOST" ] . "/", $rawInputFile ) );
+							$result = $this->curl->curl( $url );
+
+							if( $result[ "success" ] === true )
+							{
+								$inputContents = $result[ "content" ];
+							}
+							else
+							{
+								throw new ErrorException( "Invalid input URL: " . $url );
+							}
 						}
 						else
 						{
-							throw new ErrorException( "Invalid input URL: " . $url );
+							// Read from filesystem
+							$inputFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $rawInputFile ) );
+							$realInputFile = realpath( $inputFile );
+
+							if( $realInputFile !== false )
+							{
+								$inputContents = $this->fileGetContents( $realInputFile );
+							}
+							else
+							{
+								throw new ErrorException( "Invalid input file: " . $inputFile );
+							}
 						}
+
+						$contents = ( $contents . $inputContents . PHP_EOL . PHP_EOL );
 					}
-					else
+
+					if( strlen( $contents ) > 0 )
 					{
-						// Read from filesystem
-						$inputFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $rawInputFile ) );
-						$realInputFile = realpath( $inputFile );
-
-						if( $realInputFile !== false )
-						{
-							$inputContents = $this->fileGetContents( $realInputFile );
-						}
-						else
-						{
-							throw new ErrorException( "Invalid input file: " . $inputFile );
-						}
+						file_put_contents( $targetFile, $contents );
 					}
-
-					$contents = ( $contents . $inputContents . PHP_EOL . PHP_EOL );
 				}
-
-				if( strlen( $contents ) > 0 )
+				else
 				{
-					file_put_contents( $targetFile, $contents );
+					throw new ErrorException( "Invalid configuration set, no equal sign found." );
 				}
-			}
-			else
-			{
-				throw new ErrorException( "Invalid configuration set, no equal sign found." );
 			}
 		}
 	}
@@ -107,26 +108,24 @@ class Combiner extends AbstractShiftRefresh
 		return mb_convert_encoding( $contents, "UTF-8", mb_detect_encoding( $contents, "UTF-8, ISO-8859-1", true ) );
 	}
 
-	public function renderSettings()
+	public function renderEventObservables( CommittableArrayObject $settings )
 	{
-		parent::renderSettings();
+		parent::renderEventObservables( $settings );
 
-		$settings = $this->settings->get();
+		if( ! $settings->offsetExists( "configuration" ) ) $settings->offsetSet( "configuration", "" );
 
-		if( ! isset( $settings[ "configuration" ] ) ) $settings[ "configuration" ] = "";
+		?>configuration: ko.observable( <?php echo json_encode( $settings->offsetGet( "configuration" ) ); ?> ),
+		<?php
+	}
 
-		?><script type="text/javascript">
-			<?php echo $this->viewModel; ?>.configuration = ko.observable( <?php echo json_encode( $settings[ "configuration" ] ); ?> );
-		</script>
+	public function renderEventSettings()
+	{
+		parent::renderEventSettings();
 
-		<!-- ko with: <?php echo $this->viewModel; ?> -->
-		<details>
-			<summary>Toggle advanced</summary>
-			<label>
-				<span>Configuration:</span>
-				<textarea data-bind="value: configuration"></textarea>
-			</label>
-		</details>
+		?><label>
+			<span>Configuration:</span>
+			<textarea data-bind="value: configuration"></textarea>
+		</label>
 
 		<details>
 			<summary>Toggle examples</summary>
@@ -145,18 +144,6 @@ class Combiner extends AbstractShiftRefresh
 + ../inc/scripts/app.js
 = ../inc/cache/combined.js</code></p>
 		</details>
-		<!-- /ko -->
 		<?php
-	}
-
-	public function updateSettings( Array $newSettings )
-	{
-		$settings = $this->settings->get();
-
-		$settings[ "configuration" ] = $newSettings[ "configuration" ];
-
-		$this->settings->set( $settings );
-
-		parent::updateSettings( $newSettings );
 	}
 }

@@ -3,6 +3,7 @@
 namespace Plugins\URLReplace;
 
 use Dash\Event;
+use Dash\CommittableArrayObject;
 use Plugins\AbstractCurl\AbstractCurl;
 
 class URLReplace extends AbstractCurl
@@ -12,7 +13,7 @@ class URLReplace extends AbstractCurl
 		$this->addListeners( array( $this, "callback" ) );
 	}
 
-	public function callback( Event $event )
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
 		$content = $this->replace( $event->getContent(), $event->getParameters() );
 		$event->setContent( $content );

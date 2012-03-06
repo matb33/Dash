@@ -4,50 +4,51 @@ namespace Plugins\Minifier;
 
 use ErrorException;
 
+use Dash\Event;
+use Dash\CommittableArrayObject;
 use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
 
 class Minifier extends AbstractShiftRefresh
 {
 	public function init()
 	{
-		if( $this->isShiftRefresh() )
-		{
-			$this->addListeners( array( $this, "minify" ) );
-		}
+		$this->addListeners( array( $this, "callback" ) );
 	}
 
-	public function minify()
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
-		$settings = $this->settings->get();
-		$config = $settings[ "configuration" ];
-		$config = str_replace( "\r\n", "\n", $config );
-		$basePath = dirname( $_SERVER[ "SCRIPT_FILENAME" ] );
-
-		$sets = explode( "\n", trim( $config ) );
-
-		foreach( $sets as $set )
+		if( $this->testShiftRefresh( $settings ) )
 		{
-			$params = explode( "=>", trim( $set ), 2 );
+			$config = $settings->offsetGet( "configuration" );
+			$config = str_replace( "\r\n", "\n", $config );
+			$basePath = dirname( $_SERVER[ "SCRIPT_FILENAME" ] );
 
-			if( count( $params ) === 2 )
+			$sets = explode( "\n", trim( $config ) );
+
+			foreach( $sets as $set )
 			{
-				$inputFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 0 ] ) );
-				$realInputFile = realpath( $inputFile );
+				$params = explode( "=>", trim( $set ), 2 );
 
-				if( $realInputFile !== false )
+				if( count( $params ) === 2 )
 				{
-					$targetFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 1 ] ) );
+					$inputFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 0 ] ) );
+					$realInputFile = realpath( $inputFile );
 
-					$this->ajaxmin( $realInputFile, $targetFile );
+					if( $realInputFile !== false )
+					{
+						$targetFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 1 ] ) );
+
+						$this->ajaxmin( $realInputFile, $targetFile );
+					}
+					else
+					{
+						throw new ErrorException( "Invalid input file: " . $inputFile );
+					}
 				}
 				else
 				{
-					throw new ErrorException( "Invalid input file: " . $inputFile );
+					throw new ErrorException( "Invalid configuration set, no equal arrow =&gt; found." );
 				}
-			}
-			else
-			{
-				throw new ErrorException( "Invalid configuration set, no equal arrow =&gt; found." );
 			}
 		}
 	}
@@ -66,53 +67,43 @@ class Minifier extends AbstractShiftRefresh
 		switch( $type )
 		{
 			case "css":
+				// $t1 = microtime( true );
 				exec( __DIR__ . DIRECTORY_SEPARATOR . "AjaxMin.exe -CSS -clobber:true " . $inputFile . " -o " . $outputFile );
+				// echo ( microtime( true ) - $t1 ) . " seconds elapsed on CSS min.";
 			break;
 
 			case "js":
 			default:
+				// $t1 = microtime( true );
 				exec( __DIR__ . DIRECTORY_SEPARATOR . "AjaxMin.exe -JS -clobber:true -term " . $inputFile . " -o " . $outputFile );
+				//echo ( microtime( true ) - $t1 ) . " seconds elapsed on JS min.";
 		}
 	}
 
-	public function renderSettings()
+	public function renderEventObservables( CommittableArrayObject $settings )
 	{
-		parent::renderSettings();
+		parent::renderEventObservables( $settings );
 
-		$settings = $this->settings->get();
+		if( ! $settings->offsetExists( "configuration" ) ) $settings->offsetSet( "configuration", "" );
 
-		if( ! isset( $settings[ "configuration" ] ) ) $settings[ "configuration" ] = "";
+		?>configuration: ko.observable( <?php echo json_encode( $settings->offsetGet( "configuration" ) ); ?> ),
+		<?php
+	}
 
-		?><script type="text/javascript">
-			<?php echo $this->viewModel; ?>.configuration = ko.observable( <?php echo json_encode( $settings[ "configuration" ] ); ?> );
-		</script>
+	public function renderEventSettings()
+	{
+		parent::renderEventSettings();
 
-		<!-- ko with: <?php echo $this->viewModel; ?> -->
-		<details>
-			<summary>Toggle advanced</summary>
-			<label>
-				<span>Configuration:<br /><em>Paths are relative to dash.php</em></span>
-				<textarea data-bind="value: configuration"></textarea>
-			</label>
-		</details>
+		?><label>
+			<span>Configuration:<br /><em>Paths are relative to dash.php</em></span>
+			<textarea data-bind="value: configuration"></textarea>
+		</label>
 		<details>
 			<summary>Toggle examples</summary>
 			<p>Example configuration:
 			<code>../inc/cache/combined.css => ../inc/cache/combined.min.css
 ../inc/cache/combined.js => ../inc/cache/combined.min.js</code></p>
 		</details>
-		<!-- /ko -->
 		<?php
-	}
-
-	public function updateSettings( Array $newSettings )
-	{
-		$settings = $this->settings->get();
-
-		$settings[ "configuration" ] = $newSettings[ "configuration" ];
-
-		$this->settings->set( $settings );
-
-		parent::updateSettings( $newSettings );
 	}
 }

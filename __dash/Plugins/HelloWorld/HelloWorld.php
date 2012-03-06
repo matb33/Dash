@@ -2,6 +2,8 @@
 
 namespace Plugins\HelloWorld;
 
+use Dash\CommittableArrayObject;
+
 class HelloWorld extends \Dash\Plugin
 {
 	public function run( Array $parameters )
@@ -16,38 +18,24 @@ class HelloWorld extends \Dash\Plugin
 		}
 	}
 
-	public function renderSettings()
+	public function renderCommonObservables( CommittableArrayObject $settings )
 	{
-		parent::renderSettings();
+		parent::renderCommonObservables( $settings );
 
-		$settings = $this->settings->get();
+		if( ! $settings->offsetExists( "who" ) ) $settings->offsetSet( "who", "" );
 
-		if( ! isset( $settings[ "who" ] ) ) $settings[ "who" ] = "";
-
-		?><script type="text/javascript">
-			<?php echo $this->viewModel; ?>.who = ko.observable( <?php echo json_encode( $settings[ "who" ] ); ?> );
-		</script>
-
-		<!-- ko with: <?php echo $this->viewModel; ?> -->
-		<details>
-			<summary>Toggle advanced</summary>
-			<label>
-				<span>Hello who?</span>
-				<input type="text" data-bind="value: who" />
-			</label>
-		</details>
-		<!-- /ko -->
+		?>who: ko.observable( <?php echo json_encode( $settings->offsetGet( "who" ) ); ?> ),
 		<?php
 	}
 
-	public function updateSettings( Array $newSettings )
+	public function renderCommonSettings()
 	{
-		$settings = $this->settings->get();
+		parent::renderCommonSettings();
 
-		$settings[ "who" ] = $newSettings[ "who" ];
-
-		$this->settings->set( $settings );
-
-		parent::updateSettings( $newSettings );
+		?><label>
+			<span>Hello who?</span>
+			<input type="text" data-bind="value: who" />
+		</label>
+		<?php
 	}
 }

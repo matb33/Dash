@@ -28,7 +28,7 @@ class JSONSettingStorage implements SettingStorageInterface
 		foreach( $allSettings as $pluginName => $rawSettings )
 		{
 			$pluginSettings = new PluginSettings( $this );
-			$pluginSettings->set( $rawSettings );
+			$pluginSettings->exchangeArray( $rawSettings );
 
 			$this->pluginSettingsList[ $pluginName ] = $pluginSettings;
 		}
@@ -40,7 +40,7 @@ class JSONSettingStorage implements SettingStorageInterface
 
 		foreach( $this->pluginSettingsList as $pluginName => $pluginSettings )
 		{
-			$allSettings[ $pluginName ] = $pluginSettings->get();
+			$allSettings[ $pluginName ] = $pluginSettings->getArrayCopy();
 		}
 
 		file_put_contents( $this->filename, $this->jsonFormat( json_encode( $allSettings ) ) );

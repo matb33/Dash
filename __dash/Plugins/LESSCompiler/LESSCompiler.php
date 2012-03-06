@@ -4,16 +4,15 @@ namespace Plugins\LESSCompiler;
 
 use ErrorException;
 
+use Dash\Event;
+use Dash\CommittableArrayObject;
 use Plugins\AbstractShiftRefresh\AbstractShiftRefresh;
 
 class LESSCompiler extends AbstractShiftRefresh
 {
 	public function init()
 	{
-		if( $this->isShiftRefresh() )
-		{
-			$this->addListeners( array( $this, "compile" ) );
-		}
+		$this->addListeners( array( $this, "callback" ) );
 	}
 
 	public function run( Array $parameters )
@@ -31,38 +30,40 @@ class LESSCompiler extends AbstractShiftRefresh
 		}
 	}
 
-	public function compile()
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
-		$settings = $this->settings->get();
-		$config = $settings[ "configuration" ];
-		$config = str_replace( "\r\n", "\n", $config );
-		$basePath = dirname( $_SERVER[ "SCRIPT_FILENAME" ] );
-
-		$sets = explode( "\n", trim( $config ) );
-
-		foreach( $sets as $set )
+		if( $this->testShiftRefresh( $settings ) )
 		{
-			$params = explode( "=>", trim( $set ), 2 );
+			$config = $settings->offsetGet( "configuration" );
+			$config = str_replace( "\r\n", "\n", $config );
+			$basePath = dirname( $_SERVER[ "SCRIPT_FILENAME" ] );
 
-			if( count( $params ) === 2 )
+			$sets = explode( "\n", trim( $config ) );
+
+			foreach( $sets as $set )
 			{
-				$inputFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 0 ] ) );
-				$realInputFile = realpath( $inputFile );
+				$params = explode( "=>", trim( $set ), 2 );
 
-				if( $realInputFile !== false )
+				if( count( $params ) === 2 )
 				{
-					$targetFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 1 ] ) );
+					$inputFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 0 ] ) );
+					$realInputFile = realpath( $inputFile );
 
-					$this->less( $realInputFile, $targetFile );
+					if( $realInputFile !== false )
+					{
+						$targetFile = str_replace( array( "/", "\\" ), DIRECTORY_SEPARATOR, $basePath . DIRECTORY_SEPARATOR . trim( $params[ 1 ] ) );
+
+						$this->less( $realInputFile, $targetFile );
+					}
+					else
+					{
+						throw new ErrorException( "Invalid input file: " . $inputFile );
+					}
 				}
 				else
 				{
-					throw new ErrorException( "Invalid input file: " . $inputFile );
+					throw new ErrorException( "Invalid configuration set, no equal arrow =&gt; found." );
 				}
-			}
-			else
-			{
-				throw new ErrorException( "Invalid configuration set, no equal arrow =&gt; found." );
 			}
 		}
 	}
@@ -122,26 +123,24 @@ class LESSCompiler extends AbstractShiftRefresh
 		<?php
 	}
 
-	public function renderSettings()
+	public function renderEventObservables( CommittableArrayObject $settings )
 	{
-		parent::renderSettings();
+		parent::renderEventObservables( $settings );
 
-		$settings = $this->settings->get();
+		if( ! $settings->offsetExists( "configuration" ) ) $settings->offsetSet( "configuration", "" );
 
-		if( ! isset( $settings[ "configuration" ] ) ) $settings[ "configuration" ] = "";
+		?>configuration: ko.observable( <?php echo json_encode( $settings->offsetGet( "configuration" ) ); ?> ),
+		<?php
+	}
 
-		?><script type="text/javascript">
-			<?php echo $this->viewModel; ?>.configuration = ko.observable( <?php echo json_encode( $settings[ "configuration" ] ); ?> );
-		</script>
+	public function renderEventSettings()
+	{
+		parent::renderEventSettings();
 
-		<!-- ko with: <?php echo $this->viewModel; ?> -->
-		<details>
-			<summary>Toggle advanced</summary>
-			<label>
-				<span>Configuration:</span>
-				<textarea data-bind="value: configuration"></textarea>
-			</label>
-		</details>
+		?><label>
+			<span>Configuration:</span>
+			<textarea data-bind="value: configuration"></textarea>
+		</label>
 		<details>
 			<summary>Toggle examples</summary>
 			<p>Example configuration:
@@ -152,18 +151,6 @@ class LESSCompiler extends AbstractShiftRefresh
 			<p>Example run usage:
 			<code>/-/LESSCompiler?file=../inc/styles/style.less.css</code></p>
 		</details>
-		<!-- /ko -->
 		<?php
-	}
-
-	public function updateSettings( Array $newSettings )
-	{
-		$settings = $this->settings->get();
-
-		$settings[ "configuration" ] = $newSettings[ "configuration" ];
-
-		$this->settings->set( $settings );
-
-		parent::updateSettings( $newSettings );
 	}
 }

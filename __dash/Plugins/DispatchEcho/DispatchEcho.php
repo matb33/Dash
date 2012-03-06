@@ -12,15 +12,15 @@ class DispatchEcho extends \Dash\Plugin
 
 		if( strlen( $eventName ) > 0 )
 		{
-			$event = new Event( $parameters );
+			$event = new Event( $eventName, $parameters );
 			$this->dispatcher->dispatch( $eventName, $event );
 			echo $event->getContent();
 		}
 	}
 
-	public function renderSettings()
+	public function renderCommonSettings()
 	{
-		parent::renderSettings();
+		parent::renderCommonSettings();
 
 		?><details>
 			<summary>Toggle examples</summary>

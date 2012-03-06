@@ -3,6 +3,7 @@
 namespace Plugins\JSONEncode;
 
 use Dash\Event;
+use Dash\CommittableArrayObject;
 use Plugins\AbstractCurl\AbstractCurl;
 
 class JSONEncode extends AbstractCurl
@@ -12,7 +13,7 @@ class JSONEncode extends AbstractCurl
 		$this->addListeners( array( $this, "callback" ) );
 	}
 
-	public function callback( Event $event )
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
 		$content = $this->encode( $event->getContent() );
 		$event->setContent( $content );

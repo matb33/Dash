@@ -2,12 +2,21 @@
 
 namespace Plugins\AbstractShiftRefresh;
 
+use Dash\Event;
+use Dash\CommittableArrayObject;
+
 abstract class AbstractShiftRefresh extends \Dash\Plugin
 {
-	protected function isShiftRefresh()
+	protected function testShiftRefresh( CommittableArrayObject $settings = NULL )
 	{
-		$settings = $this->settings->get();
-		return ( ! $settings[ "onshiftrefresh" ] || $settings[ "onshiftrefresh" ] && $this->isShiftRefreshSentInHeaders() );
+		if( $settings === NULL )
+		{
+			$settings = $this->getCommonSettings();
+		}
+
+		$isOnShiftRefresh = $settings->offsetExists( "onshiftrefresh" ) && $settings->offsetGet( "onshiftrefresh" );
+
+		return ( ! $isOnShiftRefresh || $isOnShiftRefresh && $this->isShiftRefreshSentInHeaders() );
 	}
 
 	private function isShiftRefreshSentInHeaders()
@@ -22,35 +31,24 @@ abstract class AbstractShiftRefresh extends \Dash\Plugin
 		return false;
 	}
 
-	public function renderSettings()
+	public function renderEventObservables( CommittableArrayObject $settings )
 	{
-		parent::renderSettings();
+		parent::renderEventObservables( $settings );
 
-		$settings = $this->settings->get();
+		if( ! $settings->offsetExists( "onshiftrefresh" ) ) $settings->offsetSet( "onshiftrefresh", true );
 
-		if( ! isset( $settings[ "onshiftrefresh" ] ) ) $settings[ "onshiftrefresh" ] = true;
-
-		?><script type="text/javascript">
-			<?php echo $this->viewModel; ?>.onshiftrefresh = ko.observable( <?php echo $settings[ "onshiftrefresh" ] ? "true" : "false"; ?> );
-		</script>
-
-		<!-- ko with: <?php echo $this->viewModel; ?> -->
-		<label>
-			<input type="checkbox" data-bind="checked: onshiftrefresh" />
-			<span>Check to run only on Shift+Refresh (Ctrl+Refresh on some browsers). Unchecked will always run.</span>
-		</label>
-		<!-- /ko -->
+		?>onshiftrefresh: ko.observable( <?php echo json_encode( $settings->offsetGet( "onshiftrefresh" ) ? true : false ); ?> ),
 		<?php
 	}
 
-	public function updateSettings( Array $newSettings )
+	public function renderEventSettings()
 	{
-		$settings = $this->settings->get();
+		parent::renderEventSettings();
 
-		$settings[ "onshiftrefresh" ] = isset( $newSettings[ "onshiftrefresh" ] ) && $newSettings[ "onshiftrefresh" ] === true;
-
-		$this->settings->set( $settings );
-
-		parent::updateSettings( $newSettings );
+		?><label>
+			<input type="checkbox" data-bind="checked: onshiftrefresh" />
+			<span>Check to run only on Shift+Refresh (Ctrl+Refresh on some browsers). Unchecked will always run.</span>
+		</label>
+		<?php
 	}
 }

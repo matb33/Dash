@@ -2,16 +2,19 @@
 
 namespace Dash;
 
+use ArrayObject;
+
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 abstract class Plugin
 {
+	public $name;
+
 	protected $manager;
 	protected $dispatcher;
-	protected $settings;
 
-	public $name;
-	public $viewModel;
+	private $settings;
+	private $viewModel;
 
 	public function __construct()
 	{
@@ -34,6 +37,33 @@ abstract class Plugin
 		$this->settings = $pluginSettings;
 	}
 
+	public function getCommonSettings()
+	{
+		return $this->settings->getCommonSettings();
+	}
+
+	public function getEventConfigCollection()
+	{
+		return $this->settings->getEventConfigCollection();
+	}
+
+	public function getCommittableArrayObject()
+	{
+		return new CommittableArrayObject( $this->settings );
+	}
+
+	public function getViewModelName()
+	{
+		return $this->viewModel;
+	}
+
+	protected function dispatchEvent( $eventName, $content = NULL, Array $parameters = array() )
+	{
+		$event = new Event( $eventName, $parameters, $content );
+		$this->dispatcher->dispatch( $eventName, $event );
+		return $event->getContent();
+	}
+
 	public function init()
 	{
 		// No init code defined in base plugin
@@ -44,100 +74,52 @@ abstract class Plugin
 		// No run code defined in base plugin
 	}
 
-	public function renderSettings()
+	public function renderEventObservables( CommittableArrayObject $settings )
 	{
-		$settings = $this->settings->get();
+		// No event observables defined in base plugin
+	}
 
-		if( ! isset( $settings[ "enabled" ] ) ) $settings[ "enabled" ] = false;
-		if( ! isset( $settings[ "events" ] ) ) $settings[ "events" ] = array( "default" => "0" );
+	public function renderCommonObservables( CommittableArrayObject $settings )
+	{
+		if( ! $settings->offsetExists( "enabled" ) ) $settings->offsetSet( "enabled", false );
 
-		?><script type="text/javascript">
-			<?php echo $this->viewModel; ?>.enabled = ko.observable( <?php echo $settings[ "enabled" ] ? "true" : "false"; ?> );
-			<?php echo $this->viewModel; ?>.events = ko.observable( <?php echo json_encode( $this->arrayEventsToRaw( $settings[ "events" ] ) ); ?> );
-			<?php echo $this->viewModel; ?>.enabled.subscribe( function( value ) {
-				DASH.sync( "<?php echo $this->name; ?>", <?php echo $this->viewModel; ?> );
-			});
-		</script>
-
-		<!-- ko with: <?php echo $this->viewModel; ?> -->
-		<label class="enabled">
-			<input type="checkbox" data-bind="checked: enabled" /> <span data-bind="visible: enabled">Uncheck to disable</span><span data-bind="hidden: enabled">Check to enable</span>
-		</label>
-		<label class="events">
-			<span>Event config:<br /><em>Format: eventName[:priority],eventName[:priority] (example: bleh:10,blah:20,other)</em></span>
-			<input type="text" data-bind="value: events" />
-		</label>
-		<!-- /ko -->
+		?>enabled: ko.observable( <?php echo json_encode( $settings->offsetGet( "enabled" ) ? true : false ); ?> ),
 		<?php
 	}
 
-	public function updateSettings( Array $newSettings )
+	public function renderCommonSettings()
 	{
-		$settings = $this->settings->get();
+		?><script type="text/javascript">
+			<?php echo $this->getViewModelName(); ?>.settings.common.enabled.subscribe( function( value ) {
+				<?php echo $this->getViewModelName(); ?>.save();
+			});
+		</script>
 
-		$settings[ "enabled" ] = isset( $newSettings[ "enabled" ] ) && $newSettings[ "enabled" ] === true;
+		<label class="enabled">
+			<input type="checkbox" data-bind="checked: enabled" /> <span data-bind="visible: enabled">Uncheck to disable</span><span data-bind="visible: !enabled()">Check to enable</span>
+		</label>
+		<?php
+	}
 
-		if( isset( $newSettings[ "events" ] ) )
-		{
-			if( ! isset( $settings[ "events" ] ) ) $settings[ "events" ] = array();
-			$settings[ "events" ] = $this->rawEventsToArray( $settings[ "events" ], $newSettings[ "events" ] );
-		}
-
-		$this->settings->set( $settings );
-		$this->settings->commit();
+	public function renderEventSettings()
+	{
+		// No default event settings
 	}
 
 	protected function addListeners( Array $callback )
 	{
-		$settings = $this->settings->get();
+		$eventConfigCollection = $this->getEventConfigCollection();
 
-		if( isset( $settings[ "events" ] ) && is_array( $settings[ "events" ] ) )
+		foreach( $eventConfigCollection as $eventConfig )
 		{
-			foreach( $settings[ "events" ] as $eventName => $eventPriority )
-			{
-				$this->dispatcher->addListener( $eventName, $callback, $eventPriority );
-			}
+			$this->dispatcher->addListener(
+				$eventConfig->getName(),
+				function( Event $event ) use( $callback, $eventConfig )
+				{
+					call_user_func_array( $callback, array( $event, $eventConfig->getSettings() ) );
+				},
+				$eventConfig->getPriority()
+			 );
 		}
-	}
-
-	protected function dispatchEvent( $eventName, $content = NULL, Array $parameters = array() )
-	{
-		$event = new Event( $parameters, $content );
-		$this->dispatcher->dispatch( $eventName, $event );
-		return $event->getContent();
-	}
-
-	private function rawEventsToArray( Array $existingEvents, $rawEvents )
-	{
-		$existingEvents = array();
-
-		if( strlen( $rawEvents ) > 0 )
-		{
-			$events = explode( ",", $rawEvents );
-
-			foreach( $events as $rawEvent )
-			{
-				$event = explode( ":", $rawEvent );
-
-				$eventName = $event[ 0 ];
-				$eventPriority = isset( $event[ 1 ] ) ? $event[ 1 ] : 0;
-
-				$existingEvents[ $eventName ] = $eventPriority;
-			}
-		}
-
-		return $existingEvents;
-	}
-
-	private function arrayEventsToRaw( Array $arrayEvents )
-	{
-		$rawEvents = array();
-
-		foreach( $arrayEvents as $eventName => $eventPriority )
-		{
-			$rawEvents[] = $eventName . ":" . $eventPriority;
-		}
-
-		return implode( ",", $rawEvents );
 	}
 }

@@ -3,6 +3,7 @@
 namespace Plugins\Curl;
 
 use Dash\Event;
+use Dash\CommittableArrayObject;
 use Plugins\AbstractCurl\AbstractCurl;
 
 class Curl extends AbstractCurl
@@ -12,7 +13,7 @@ class Curl extends AbstractCurl
 		$this->addListeners( array( $this, "callback" ) );
 	}
 
-	public function callback( Event $event )
+	public function callback( Event $event, CommittableArrayObject $settings )
 	{
 		$url = $this->getURL( $event->getParameters() );
 		$result = $this->curl( $url );
@@ -31,15 +32,20 @@ class Curl extends AbstractCurl
 		}
 	}
 
+	public function addHeader( $header )
+	{
+		parent::addHeader( $header );
+	}
+
 	public function curl( $url )
 	{
 		// Promote curl method from protected to public
 		return parent::curl( $url );
 	}
 
-	public function renderSettings()
+	public function renderCommonSettings()
 	{
-		parent::renderSettings();
+		parent::renderCommonSettings();
 
 		?><details>
 			<summary>Toggle examples</summary>
