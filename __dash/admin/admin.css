@@ -253,6 +253,7 @@ ul.settings > li {
 
 ul.settings > li.target {
 	display: block;
+	overflow: hidden;
 }
 
 /* Event name/priority form fields */

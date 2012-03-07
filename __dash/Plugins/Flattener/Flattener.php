@@ -33,10 +33,10 @@ class Flattener extends AbstractShiftRefresh
 
 			$settings = $this->getCommonSettings();
 
-			$batch = $settings->offsetGet( "batch" );
+			$batch = $this->dispatchEvent( "Flattener.batch", $settings->offsetGet( "batch" ) );
 			$batch = str_replace( "\r\n", "\n", $batch );
 
-			$parts = $parameters[ "p" ];
+			$parts = isset( $parameters[ "p" ] ) ? $parameters[ "p" ] : array();
 
 			$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings->offsetGet( "flatoutputfolder" ) );
 			$outputFolder = $this->parseTokens( $outputFolder, $parts );
@@ -60,7 +60,7 @@ class Flattener extends AbstractShiftRefresh
 				$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings->offsetGet( "flatoutputfolder" ) );
 				$outputFolder = $this->removeTokens( $outputFolder );
 
-				$batch = $settings->offsetGet( "batch" );
+				$batch = $this->dispatchEvent( "Flattener.batch", $settings->offsetGet( "batch" ) );
 				$batch = trim( str_replace( "\r\n", "\n", $batch ) );
 
 				$inputRelativeURL = $inputRelativeURLs = NULL;
@@ -286,6 +286,7 @@ class Flattener extends AbstractShiftRefresh
 			<li><strong>Flattener.outputFolder</strong> : Allows you to modify the outputFolder.</li>
 			<li><strong>Flattener.inputRelativeURLs</strong> : Allows you to modify the inputRelativeURLs.</li>
 			<li><strong>Flattener.syncFolders</strong> : Allows you to modify the syncFolders.</li>
+			<li><strong>Flattener.batch</strong> : Allows you to modify the batch.</li>
 			<li><strong>Flattener.curlContent</strong> : Allows you to modify the retrieved content for each file the flattener processes. Parameters passed are "url", "outPath" and "outFile".</li>
 			<li><strong>Flattener.curlComplete</strong> : Allows you to chain another event after the flattener has processed a particular file. Content not available for modification, but file is written to disk. Parameters passed are "url", "outPath" and "outFile".</li>
 			<li><strong>Flattener.allComplete</strong> : Allows you to chain another event after the flattener has finished all flattening. Parameters passed are "outputFolder", "batch", "inputRelativeURLs" and/or "inputRelativeURL".</li>
