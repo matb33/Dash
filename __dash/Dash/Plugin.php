@@ -18,7 +18,7 @@ abstract class Plugin
 
 	public function __construct()
 	{
-		$this->name = basename( get_called_class() );
+		$this->name = basename( str_replace( array( "\\", "/" ), "/", get_called_class() ) );
 		$this->viewModel = "DASH.viewModel." . $this->name;
 	}
 

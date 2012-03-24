@@ -2,6 +2,7 @@
 
 namespace Plugins\LESSCompiler;
 
+use Exception;
 use ErrorException;
 
 use Dash\Event;
@@ -70,56 +71,40 @@ class LESSCompiler extends AbstractShiftRefresh
 
 	private function less( $in, $out = NULL )
 	{
-		$command = "cscript //nologo \"" . __DIR__ . DIRECTORY_SEPARATOR . "lessc.wsf\" \"" . $in . "\"" . ( $out !== NULL ? " \"" . $out . "\"" : "" );
+		require_once "lessphp/lessc.inc.php";
 
-		$outputArray = NULL;
-		$errors = array();
-
-		exec( $command . " 2>&1", $outputArray );
-
-		if( is_array( $outputArray ) )
+		try
 		{
-			$output = implode( "\n", $outputArray );
-
-			if( strpos( $output, "ERR" ) !== false )
+			if( $out !== NULL )
 			{
-				$errors[] = array(
-					"command" => $command,
-					"in" => $in,
-					"out" => $out,
-					"output" => $output
-				);
+				\lessc::ccompile( $in, $out );
+			}
+			else
+			{
+				$less = new \lessc( $in );
+				$output = $less->parse();
+				return $output;
 			}
 		}
-
-		if( count( $errors ) )
+		catch( Exception $ex )
 		{
-			$this->displayErrors( $errors );
+			$this->displayError( $in, $out, $ex->getMessage() );
 			return false;
 		}
-
-		return $output;
 	}
 
-	private function displayErrors( Array $errors )
+	private function displayError( $in, $out, $error )
 	{
 		?><div xmlns="http://www.w3.org/1999/xhtml">
-		<?php
-
-			foreach( $errors as $info )
-			{
-				?><fieldset style="position: absolute; top: 0px; left: 0px; z-index: 99999; border: 3px dashed red; background-color: #fff; color: #000; margin: 10px; padding: 10px; box-shadow: 0px 0px 50px #000;">
-					<legend style="font-weight: bold; background-color: #fff; font-size: 30px; padding: 5px;">LESS to CSS compilation error</legend>
-					<ul style="margin-top: 0px; margin-bottom: 0px;">
-						<li><strong>IN: </strong><?php echo $info[ "in" ]; ?></li>
-						<li><strong>OUT: </strong><?php echo $info[ "out" ]; ?></li>
-					</ul>
-					<pre style="margin: 0px; padding: 10px; border: 1px dotted #333; background-color: #fff9da; font-size: 13px;"><?php echo $info[ "output" ]; ?></pre>
-				</fieldset>
-				<?php
-			}
-
-		?></div>
+			<fieldset style="position: absolute; top: 0px; left: 0px; z-index: 99999; border: 3px dashed red; background-color: #fff; color: #000; margin: 10px; padding: 10px; box-shadow: 0px 0px 50px #000;">
+				<legend style="font-weight: bold; background-color: #fff; font-size: 30px; padding: 5px;">LESS to CSS compilation error</legend>
+				<ul style="margin-top: 0px; margin-bottom: 0px;">
+					<li><strong>IN: </strong><?php echo $in; ?></li>
+					<li><strong>OUT: </strong><?php echo $out; ?></li>
+				</ul>
+				<pre style="margin: 0px; padding: 10px; border: 1px dotted #333; background-color: #fff9da; font-size: 13px;"><?php echo $error; ?></pre>
+			</fieldset>
+		</div>
 		<?php
 	}
 

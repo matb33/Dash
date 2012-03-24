@@ -68,15 +68,21 @@ class Minifier extends AbstractShiftRefresh
 		{
 			case "css":
 				// $t1 = microtime( true );
-				exec( __DIR__ . DIRECTORY_SEPARATOR . "AjaxMin.exe -CSS -clobber:true " . $inputFile . " -o " . $outputFile );
+				require_once "minify-2.1.5/min/lib/Minify/CSS/Compressor.php";
+				$result = \Minify_CSS_Compressor::process( file_get_contents( $inputFile ) );
+				file_put_contents( $outputFile, $result );
+				// exec( __DIR__ . DIRECTORY_SEPARATOR . "AjaxMin.exe -CSS -clobber:true " . $inputFile . " -o " . $outputFile );
 				// echo ( microtime( true ) - $t1 ) . " seconds elapsed on CSS min.";
 			break;
 
 			case "js":
 			default:
 				// $t1 = microtime( true );
-				exec( __DIR__ . DIRECTORY_SEPARATOR . "AjaxMin.exe -JS -clobber:true -term " . $inputFile . " -o " . $outputFile );
-				//echo ( microtime( true ) - $t1 ) . " seconds elapsed on JS min.";
+				require_once "minify-2.1.5/min/lib/JSMinPlus.php";
+				$result = \JSMinPlus::minify( file_get_contents( $inputFile ) );
+				file_put_contents( $outputFile, $result );
+				// exec( __DIR__ . DIRECTORY_SEPARATOR . "AjaxMin.exe -JS -clobber:true -term " . $inputFile . " -o " . $outputFile );
+				// echo ( microtime( true ) - $t1 ) . " seconds elapsed on JS min.";
 		}
 	}
 

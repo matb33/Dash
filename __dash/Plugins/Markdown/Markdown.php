@@ -14,21 +14,17 @@ class Markdown extends \Dash\Plugin
 
 	public function run( Array $parameters )
 	{
-		require_once "PHP Markdown 1.0.1o/markdown.php";
-
 		$path = $parameters[ "file" ];
 		$basePath = dirname( $_SERVER[ "REDIRECT_SCRIPT_FILENAME" ] );
 
 		if( ( $contents = file_get_contents( $basePath . DIRECTORY_SEPARATOR . $path ) ) !== false )
 		{
-			echo Markdown( $contents );
+			echo self::parse( $contents );
 		}
 	}
 
 	public function callback( Event $event, CommittableArrayObject $settings )
 	{
-		require_once "PHP Markdown 1.0.1o/markdown.php";
-
 		$markerStart = preg_quote( $settings->offsetGet( "marker_start" ), "/" );
 		$markerEnd = preg_quote( $settings->offsetGet( "marker_end" ), "/" );
 
@@ -41,10 +37,16 @@ class Markdown extends \Dash\Plugin
 			$text = $matches[ 2 ];
 			$text = preg_replace( "/^[\t]{" . $tabCount . "}/m", "", $text );
 
-			return Markdown( $text );
+			return Markdown::parse( $text );
 		}, $content );
 
 		$event->setContent( $parsedContent );
+	}
+
+	public static function parse( $content )
+	{
+		require_once __DIR__ . "/PHP Markdown 1.0.1o/markdown.php";
+		return Markdown( $content );
 	}
 
 	public function renderCommonSettings()

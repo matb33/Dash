@@ -191,11 +191,19 @@ class Flattener extends AbstractShiftRefresh
 				if( $inputIsFile )
 				{
 					$realSyncDestination = $realSyncDestination . DIRECTORY_SEPARATOR . $syncOutputFile;
-					$command = "copy /y \"" . $realSyncInput . "\" \"" . $realSyncDestination . "\"";
+					copy( $realSyncInput, $realSyncDestination );
 				}
 				else
 				{
-					$command = "robocopy \"" . $realSyncInput . "\" \"" . $realSyncDestination . "\" /PURGE /S /NJH /NJS /XD .svn";
+					switch( PHP_OS )
+					{
+						case "Windows":
+							$command = "robocopy \"" . $realSyncInput . "\" \"" . $realSyncDestination . "\" /PURGE /S /NJH /NJS /XD .svn";
+						break;
+						case "Linux":
+							$command = "sudo rsync -vram --delete \"" . $realSyncInput . "/\" \"" . $realSyncDestination . "/\"";
+						break;
+					}
 				}
 
 				if( $echo ) echo $command . "\n";
@@ -274,7 +282,11 @@ class Flattener extends AbstractShiftRefresh
 			<input type="text" data-bind="value: flatoutputfolder" />
 		</label>
 		<label>
-			<span>Folders to be sync'd as-is (via robocopy). Single files are supported (via copy).<br /><em>Specify one per line, relative to dash.php</em></span>
+			<span>
+				Folders to be sync'd as-is (via robocopy or rsync). Single files are supported (via copy).<br />
+				<em>Specify one per line, relative to dash.php</em><br />
+				<em><strong>Ubuntu users:</strong><br />touch /etc/sudoers.d/apache-rsync<br />chmod 0440 /etc/sudoers.d/apache-rsync<br />gedit /etc/sudoers.d/apache-rsync<br />www-data ALL=(ALL) NOPASSWD:/usr/bin/rsync</em>
+			</span>
 			<textarea data-bind="value: syncfolders"></textarea>
 		</label>
 		<label>
@@ -335,7 +347,11 @@ class Flattener extends AbstractShiftRefresh
 			<input type="text" data-bind="value: flatoutputfolder" />
 		</label>
 		<label>
-			<span>Folders to be sync'd as-is (via robocopy). Single files are supported (via copy).<br /><em>Specify one per line, relative to dash.php</em></span>
+			<span>
+				Folders to be sync'd as-is (via robocopy or rsync). Single files are supported (via copy).<br />
+				<em>Specify one per line, relative to dash.php</em><br />
+				<em><strong>Ubuntu users:</strong><br />touch /etc/sudoers.d/apache-rsync<br />chmod 0440 /etc/sudoers.d/apache-rsync<br />gedit /etc/sudoers.d/apache-rsync<br />www-data ALL=(ALL) NOPASSWD:/usr/bin/rsync</em>
+			</span>
 			<textarea data-bind="value: syncfolders"></textarea>
 		</label>
 		<label>
