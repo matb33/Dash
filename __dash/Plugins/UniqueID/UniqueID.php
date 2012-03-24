@@ -46,7 +46,14 @@ class UniqueID extends \Dash\Plugin
 
 	private function getID()
 	{
-		return trim( file_get_contents( $this->uniqueIDFile ) );
+		if( ! file_exists( $this->uniqueIDFile ) )
+		{
+			return $this->resetID();
+		}
+		else
+		{
+			return trim( file_get_contents( $this->uniqueIDFile ) );
+		}
 	}
 
 	private function setID( $id )
