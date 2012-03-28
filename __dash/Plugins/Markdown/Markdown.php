@@ -15,10 +15,17 @@ class Markdown extends \Dash\Plugin
 	public function run( Array $parameters )
 	{
 		$path = $parameters[ "file" ];
+		$excerptMarker = isset( $parameters[ "excerpt-marker" ] ) ? $parameters[ "excerpt-marker" ] : NULL;
 		$basePath = dirname( $_SERVER[ "REDIRECT_SCRIPT_FILENAME" ] );
 
 		if( ( $contents = file_get_contents( $basePath . DIRECTORY_SEPARATOR . $path ) ) !== false )
 		{
+			if( $excerptMarker !== NULL )
+			{
+				$pos = strpos( $contents, $excerptMarker );
+				$contents = $pos !== false ? substr( $contents, 0, $pos ) : $contents;
+			}
+
 			echo self::parse( $contents );
 		}
 	}
