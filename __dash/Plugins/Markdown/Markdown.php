@@ -37,12 +37,13 @@ class Markdown extends \Dash\Plugin
 
 		$content = $event->getContent();
 
-		$parsedContent = preg_replace_callback( "/^(\t*){$markerStart}(.*?){$markerEnd}/ms", function( $matches )
+		$parsedContent = preg_replace_callback( "/^([\t| ]*){$markerStart}(.*?){$markerEnd}/ms", function( $matches )
 		{
-			$tabs = $matches[ 1 ];
-			$tabCount = substr_count( $tabs, "\t" );
+			$spacers = $matches[ 1 ];
+			$spacer = strpos( $spacers, "\t" ) !== false ? "\t" : " ";
+			$spacerCount = substr_count( $spacers, $spacer );
 			$text = $matches[ 2 ];
-			$text = preg_replace( "/^[\t]{" . $tabCount . "}/m", "", $text );
+			$text = preg_replace( "/^[" . $spacer . "]{" . $spacerCount . "}/m", "", $text );
 
 			return Markdown::parse( $text );
 		}, $content );
