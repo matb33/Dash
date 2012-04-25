@@ -197,12 +197,13 @@ class Flattener extends AbstractShiftRefresh
 				{
 					switch( PHP_OS )
 					{
-						case "Windows":
-							$command = "robocopy \"" . $realSyncInput . "\" \"" . $realSyncDestination . "\" /PURGE /S /NJH /NJS /XD .svn";
-						break;
 						case "Linux":
 							$command = "sudo rsync -vram --delete \"" . $realSyncInput . "/\" \"" . $realSyncDestination . "/\"";
 						break;
+						case "Windows":
+						case "WINNT":
+						default:
+							$command = "robocopy \"" . $realSyncInput . "\" \"" . $realSyncDestination . "\" /PURGE /S /NJH /NJS /XD .svn";
 					}
 				}
 
