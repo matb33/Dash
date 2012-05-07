@@ -15,15 +15,24 @@ class Markdown extends \Dash\Plugin
 	public function run( Array $parameters )
 	{
 		$path = $parameters[ "file" ];
-		$excerptMarker = isset( $parameters[ "excerpt-marker" ] ) ? $parameters[ "excerpt-marker" ] : NULL;
+		$marker = isset( $parameters[ "marker" ] ) ? $parameters[ "marker" ] : NULL;
+		$take = isset( $parameters[ "take" ] ) ? $parameters[ "take" ] : NULL;
 		$basePath = dirname( $_SERVER[ "REDIRECT_SCRIPT_FILENAME" ] );
 
 		if( ( $contents = file_get_contents( $basePath . DIRECTORY_SEPARATOR . $path ) ) !== false )
 		{
-			if( $excerptMarker !== NULL )
+			if( $marker !== NULL )
 			{
-				$pos = strpos( $contents, $excerptMarker );
-				$contents = $pos !== false ? substr( $contents, 0, $pos ) : $contents;
+				$pos = strpos( $contents, $marker );
+
+				if( $take === "bottom" )
+				{
+					$contents = $pos !== false ? substr( $contents, $pos + strlen( $marker ) ) : $contents;
+				}
+				else
+				{
+					$contents = $pos !== false ? substr( $contents, 0, $pos ) : $contents;
+				}
 			}
 
 			echo self::parse( $contents );
@@ -53,7 +62,7 @@ class Markdown extends \Dash\Plugin
 
 	public static function parse( $content )
 	{
-		require_once __DIR__ . "/PHP Markdown 1.0.1o/markdown.php";
+		require_once __DIR__ . "/PHP Markdown Extra 1.2.5/markdown.php";
 		return Markdown( $content );
 	}
 
