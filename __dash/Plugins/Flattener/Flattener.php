@@ -63,25 +63,35 @@ class Flattener extends AbstractShiftRefresh
 				$batch = $this->dispatchEvent( "Flattener.batch", $settings->offsetGet( "batch" ) );
 				$batch = trim( str_replace( "\r\n", "\n", $batch ) );
 
-				$inputRelativeURL = $inputRelativeURLs = NULL;
+				$inputRelativeURL = NULL;
+				$inputRelativeURLs = NULL;
+
+				$parameters = $event->getParameters();
+				$echo = isset( $parameters[ "echo" ] ) ? $parameters[ "echo" ] == "true" : false;
+				$parts = isset( $parameters[ "p" ] ) ? $parameters[ "p" ] : array();
 
 				if( strlen( $batch ) > 0 )
 				{
+					$outputFolder = $this->dispatchEvent( "Flattener.outputFolder", $settings->offsetGet( "flatoutputfolder" ) );
+					$outputFolder = $this->parseTokens( $outputFolder, $parts );
+
 					$inputRelativeURLs = explode( "\n", $batch );
 					$inputRelativeURLs = $this->dispatchEvent( "Flattener.inputRelativeURLs", $inputRelativeURLs );
 
-					$this->batchFlatten( $inputRelativeURLs, $outputFolder );
-					$this->syncFolders( $settings, $outputFolder );
+					$this->batchFlatten( $inputRelativeURLs, $outputFolder, $parts, $echo );
 				}
 				else
 				{
+					$outputFolder = $this->removeTokens( $outputFolder );
+
 					$inputRelativeURL = $_SERVER[ "REDIRECT_DOCUMENT_URI" ];
 					$inputURL = "http://" . $_SERVER[ "HTTP_HOST" ] . $inputRelativeURL . "?" . self::SUBREQ . "=1";
 					$outputFile = $outputFolder . $inputRelativeURL;
 
 					$this->fetchAndWrite( $inputURL, $outputFile );
-					$this->syncFolders( $settings, $outputFolder );
 				}
+
+				$this->syncFolders( $settings, $outputFolder, $parts, $echo );
 
 				$this->dispatchEvent( "Flattener.allComplete", NULL, array( "outputFolder" => $outputFolder, "batch" => $batch, "inputRelativeURLs" => $inputRelativeURLs, "inputRelativeURL" => $inputRelativeURL ) );
 			}
@@ -344,7 +354,15 @@ class Flattener extends AbstractShiftRefresh
 		parent::renderEventSettings();
 
 		?><label>
-			<span>Destination folder for flattened file<br /><em>Relative to dash.php</em></span>
+			<span>
+				Destination folder for flattened file<br />
+				<em>Relative to dash.php<br />
+				%1, %2, %3 etc act as parameter tokens.<br/>
+				Parameters are passed in via Dispatch as query paramters: <pre>/-/Dispatch?e=NameOfEvent&p[]=token1&p[]=token2</pre>
+				The results of the flattener can be echoed if you specify the <pre>echo=true</pre> query parameter when dispatching: <pre>/-/Dispatch?e=NameOfEvent&echo=true&p[]=token1&p[]=token2</pre>
+				This is useful if you have a page that will be conditionally flattened if a query paramter exists.
+				</em>
+			</span>
 			<input type="text" data-bind="value: flatoutputfolder" />
 		</label>
 		<label>
@@ -361,11 +379,12 @@ class Flattener extends AbstractShiftRefresh
 		</label>
 		<details>
 			<summary>Toggle examples</summary>
-			<p>Example destination folder: <code>../../flat</code></p>
-			<p>Example as-is sync folders: <code>../inc => ../../flat/inc</code></p>
+			<p>Example destination folder: <code>../../flat/%1</code></p>
+			<p>Example as-is sync folders: <code>../inc => ../../flat/%1/inc</code></p>
 			<p>Example batch flatten:
 			<code>/error.html
 /landing.html => /index.html
+/thanks.html?level=%1 => /level-%1/thank-you.html
 </code></p>
 		</details>
 		<?php
