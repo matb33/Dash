@@ -1,0 +1,111 @@
+# On branch mods
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   __dash/Dash/ChainingCommittableInterface.php
+#	modified:   __dash/Dash/CommittableArrayObject.php
+#	modified:   __dash/Dash/CommittableInterface.php
+#	modified:   __dash/Dash/Event.php
+#	modified:   __dash/Dash/EventConfig.php
+#	modified:   __dash/Dash/EventConfigCollection.php
+#	modified:   __dash/Dash/JSONSettingStorage.php
+#	modified:   __dash/Dash/Plugin.php
+#	modified:   __dash/Dash/PluginSettings.php
+#	modified:   __dash/Plugins/AbstractCurl/AbstractCurl.php
+#	modified:   __dash/Plugins/AbstractShiftRefresh/AbstractShiftRefresh.php
+#	modified:   __dash/Plugins/Combiner/Combiner.php
+#	modified:   __dash/Plugins/Curl/Curl.php
+#	modified:   __dash/Plugins/Dispatch/Dispatch.php
+#	modified:   __dash/Plugins/DispatchEcho/DispatchEcho.php
+#	modified:   __dash/Plugins/Flattener/Flattener.php
+#	modified:   __dash/Plugins/FlattenerBatchFilter/FlattenerBatchFilter.php
+#	modified:   __dash/Plugins/HTMLToOutlookMsg/HTMLToOutlookMsg.php
+#	modified:   __dash/Plugins/HelloWorld/HelloWorld.php
+#	modified:   __dash/Plugins/JSONEncode/JSONEncode.php
+#	modified:   __dash/Plugins/LESSCompiler/LESSCompiler.php
+#	modified:   __dash/Plugins/MailChimpHTMLToText/MailChimpHTMLToText.php
+#	modified:   __dash/Plugins/Markdown/Markdown.php
+#	modified:   __dash/Plugins/Minifier/Minifier.php
+#	modified:   __dash/Plugins/Minifier/minify-2.1.5/.gitignore
+#	modified:   __dash/Plugins/Minifier/minify-2.1.5/min/builder/jquery-1.6.3.min.js
+#	modified:   __dash/Plugins/Minifier/minify-2.1.5/min/builder/ocCheck.php
+#	modified:   __dash/Plugins/Minifier/minify-2.1.5/min/lib/Minify/CSS.php
+#	modified:   __dash/Plugins/Minifier/minify-2.1.5/min/lib/Minify/CSS/Compressor.php
+#	modified:   __dash/Plugins/Minifier/minify-2.1.5/min/lib/Minify/DebugDetector.php
+#	modified:   __dash/Plugins/Minifier/minify-2.1.5/min/lib/Minify/HTML.php
+#	modified:   __dash/Plugins/Minifier/minify-2.1.5/min/lib/Minify/ImportProcessor.php
+#	modified:   __dash/Plugins/Preparser/Preparser.php
+#	modified:   __dash/Plugins/Typography/php-typography/change_log-php.txt
+#	modified:   __dash/Plugins/Typography/php-typography/diacritics/en-US.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/bg.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/ca.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/cs.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/cy.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/da.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/de.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/el-Mono.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/el-Poly.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/en-GB.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/en-US.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/es.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/et.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/eu.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/fi.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/fr.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/ga.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/gl.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/grc.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/hr.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/hu.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/ia.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/id.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/is.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/it.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/la.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/lt.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/mn-Cyrl.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/no.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/pl.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/pt.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/ro.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/ru.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/sa.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/sh-Cyrl.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/sh-Latn.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/sk.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/sl.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/sr-Cyrl.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/sv.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/tr.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/uk.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang/zh-Latn.php
+#	modified:   __dash/Plugins/Typography/php-typography/lang_unformatted/hyph-la.tex
+#	modified:   __dash/Plugins/Typography/php-typography/lang_unformatted/hyph-no.tex
+#	modified:   __dash/Plugins/Typography/php-typography/lang_unformatted/template.txt
+#	modified:   __dash/Plugins/Typography/php-typography/php-parser/change_log_parser.txt
+#	modified:   __dash/Plugins/Typography/php-typography/php-parser/parseHTML.php
+#	modified:   __dash/Plugins/Typography/php-typography/php-parser/parseText.php
+#	modified:   __dash/Plugins/Typography/php-typography/php-parser/php-parser.php
+#	modified:   __dash/Plugins/Typography/php-typography/php-typography.php
+#	modified:   __dash/Plugins/UniqueID/UniqueID.php
+#	modified:   __dash/Symfony/Component/ClassLoader/UniversalClassLoader.php
+#	modified:   __dash/Symfony/Component/EventDispatcher/Event.php
+#	modified:   __dash/Symfony/Component/EventDispatcher/EventDispatcher.php
+#	modified:   __dash/Symfony/Component/EventDispatcher/EventDispatcherInterface.php
+#	modified:   __dash/Symfony/Component/EventDispatcher/EventSubscriberInterface.php
+#	modified:   __dash/Symfony/LICENSE
+#	modified:   __dash/admin/index.php
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	__dash/Plugins/HTMLToOutlookMsgServiceRequestor/
+#	__dash/Plugins/LESSCompiler/less.js
+#	__dash/Plugins/LESSCompiler/lessc.wsf
+#	__dash/Plugins/Minifier/AjaxMin.exe
+#	__dash/Plugins/Minifier/LICENSE
+#	__dash/Plugins/RelativeToFullyQualified/
+#	__dash/Plugins/Wget/
+#	status.txt
+no changes added to commit (use "git add" and/or "git commit -a")
