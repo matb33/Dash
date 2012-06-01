@@ -157,7 +157,7 @@ class Flattener extends AbstractShiftRefresh
 			$content = $result[ "content" ];
 			$content = $this->dispatchEvent( "Flattener.curlContent", $content, array( "url" => $url, "outPath" => $outPath, "outFile" => $outFile ) );
 			if( $content !== NULL ) file_put_contents( $outFile, $content );
-			$this->dispatchEvent( "Flattener.curlComplete", NULL, array( "url" => $url, "outPath" => $outPath, "outFile" => $outFile ) );
+			$this->dispatchEvent( "Flattener.curlComplete", $content, array( "url" => $url, "outPath" => $outPath, "outFile" => $outFile ) );
 		}
 		else
 		{

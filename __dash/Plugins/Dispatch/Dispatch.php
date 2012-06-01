@@ -24,6 +24,7 @@ class Dispatch extends \Dash\Plugin
 		?><details>
 			<summary>Toggle examples</summary>
 			<code>/-/Dispatch?e=NameOfEvent</code>
+			<code>/-/Dispatch?e=NameOfEvent<em>&amp;p[]=token1&amp;p[]=token2</em></code>
 		</details>
 		<?php
 	}

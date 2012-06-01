@@ -33,7 +33,7 @@ class MailChimpHTMLToText extends AbstractShiftRefresh
 	private function convert( $html, $serviceURL, $inputName, $scrapeTokenStart, $scrapeTokenEnd )
 	{
 		set_time_limit( 0 );
-	
+
 		$fields = array( $inputName => $html );
 		$postFields = http_build_query( $fields );
 
