@@ -50,16 +50,16 @@ label, input[type=button], input[type=submit], button { cursor: pointer; }
 
 body, input, textarea, select, button {
 	font: 100%/133% Arial, Helvetica, sans-serif;
-	color: #333333;
+	color: #0c1021;
 }
 
 h1, h2, h3, h4, h5, h6 {
-	font-family: Georgia, Arial, Helvetica, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	margin-bottom: 20px;
 }
 
-h1 { font-size: 160%; line-height: 100%; }
+h1 { font-size: 160%; line-height: 100%; color: #fff; padding-bottom: 5px; border-bottom: 3px solid #ff6400; }
 h2 { font-size: 140%; line-height: 100%; }
 h3 { font-size: 130%; line-height: 100%; }
 h4 { font-size: 120%; line-height: 100%; }
@@ -72,7 +72,7 @@ p {
 
 ul {
 	padding-left: 0px;
-	margin-left: 16px;
+	margin-left: 18px;
 }
 
 a { color: #c20909; text-decoration: underline; }
@@ -100,17 +100,13 @@ summary {
 button.save {
 	color: #ffffff;
 	padding: 5px 10px;
-	background: -moz-linear-gradient( top, #ffc821 0%, #ff3c00);
-	background: -webkit-gradient( linear, left top, left bottom, from(#ffc821), to(#ff3c00));
+	background: #ff6400;
 	border-radius: 5px;
-	border: 1px solid #b85f00;
-	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px -1px 0px rgba(255,255,255,0.7);
-	text-shadow: 0px -1px 0px rgba(000,000,000,0.3);
+	border: none;
 }
 
 button.save:active {
-	background: -moz-linear-gradient( top, #ff3c00 0%, #ffc821 25%, #fff3db);
-	background: -webkit-gradient( linear, left top, left bottom, from(#ff3c00), color-stop(0.25, #ffc821), to(#fff3db));
+	background: #ff3600;
 }
 
 /****************************
@@ -119,7 +115,7 @@ button.save:active {
 
 body {
 	padding: 20px;
-	background-color: #fff;
+	background-color: #0c1021;
 }
 
 /****************************
@@ -138,19 +134,7 @@ body {
 	padding: 8px;
 	overflow: hidden;
 	min-height: 16px;
-
-	background-image: -o-linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
-	background-image: -moz-linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
-	background-image: -webkit-linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
-	background-image: -ms-linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
-	background-image: linear-gradient(right , rgb(201,201,201) 0%, rgb(231,231,231) 100%);
-
-	border: 1px solid #fff;
-	border-color: #ccc #999 #999 #ccc;
-	border-radius: 5px;
 	margin-bottom: 5px;
-
-	box-shadow: 2px 2px 5px rgba( 0, 0, 0, 0.2 );
 }
 
 .plugin > details > summary {
@@ -163,14 +147,11 @@ body {
 
 	font-weight: bold;
 	font-size: 100%;
-	text-shadow: 1px 1px 0px rgba(255,255,255,0.7);
+	color: #fff;
 }
 
 .plugin > details[open] > summary {
-	background-color: #1f6db0;
 	color: #fff;
-	border-bottom: 1px solid #bbb;
-	text-shadow: 0px -1px 0px rgba(000,000,000,0.7);
 }
 
 /****************************
@@ -178,16 +159,16 @@ body {
 ****************************/
 
 .is-disabled summary {
-	background-color: #bbb !important;
+	background-color: #0c1021 !important;
 }
 
 .is-disabled,
 .is-disabled .settings summary,
-.is-disabled .save {
+.is-disabled .save,
+.is-disabled,
+.plugin.is-disabled > details > summary {
 	color: #888 !important;
 	background: none !important;
-	background-color: #bbb !important;
-	border-color: #888 !important;
 }
 
 /****************************
@@ -199,6 +180,7 @@ ul.settings {
 	list-style: none;
 	margin: 0px;
 	padding: 0px;
+	border-radius: 5px;
 }
 
 ul.tabs {
@@ -208,10 +190,9 @@ ul.tabs {
 ul.tabs li {
 	float: left;
 	margin-right: 2px;
-	border: 0px solid #000;
-	border-color: #eee #bbb #bbb #eee;
-	border-width: 1px 1px 0px 1px;
 	background-color: #dddddd;
+
+	border-radius: 5px 5px 0px 0px;
 }
 
 ul.tabs li:first-child {
@@ -284,18 +265,13 @@ ul.settings summary {
 	display: inline-block;
 	color: #ffffff;
 	padding: 5px 10px;
-	background: -moz-linear-gradient( top, #42aaff 0%, #003366);
-	background: -webkit-gradient( linear, left top, left bottom, from(#42aaff), to(#003366));
+	background: #61ce3c;
 	border-radius: 5px;
-	border: 1px solid #003366;
-	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 1px rgba(255,255,255,0.5);
-	text-shadow: 0px -1px 0px rgba(000,000,000,0.7), 0px 1px 0px rgba(255,255,255,0.3);
 	margin-bottom: 5px;
 }
 
 ul.settings summary:active {
-	background: -moz-linear-gradient( top, #003366 0%, #42aaff);
-	background: -webkit-gradient( linear, left top, left bottom, from(#003366), to(#42aaff));
+	background: #5eb341;
 }
 
 /* Enable/disable plugin */
@@ -322,7 +298,7 @@ ul.settings summary:active {
 label {
 	display: block;
 	clear: both;
-	margin-bottom: 10px;
+	margin-bottom: 20px;
 	overflow: hidden;
 }
 
