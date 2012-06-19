@@ -8,7 +8,7 @@ RewriteEngine On
 AddHandler server-parsed .html
 
 # Point /-/ to the Dash framework
-RewriteRule ^-/(.*)$ /__dash/dash.php/$1 [L,QSA]
+RewriteRule ^-/(.*)$ /.dash/dash.php/$1 [L,QSA]
 
 # Custom addition to allow the Preparser plugin to work
 RewriteRule Preparser - [L]

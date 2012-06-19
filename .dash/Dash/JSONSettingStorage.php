@@ -7,7 +7,7 @@ class JSONSettingStorage implements SettingStorageInterface
 	private $filename = NULL;
 	private $pluginSettingsList = array();
 
-	public function __construct( $filename = "../__dash.json" )
+	public function __construct( $filename = "../.dash.json" )
 	{
 		$this->filename = $filename;
 
