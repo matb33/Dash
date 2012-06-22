@@ -122,4 +122,32 @@ abstract class Plugin
 			 );
 		}
 	}
+
+	// Ideally this would sit in a separate class, mixed in using Traits
+	protected function parseInlineVariables( $stringToParse, Array $variables )
+	{
+		do
+		{
+			mb_ereg_search_init( $stringToParse, '({[ ]*%[A-Za-z0-9-_]+[ ]*}|%[A-Za-z0-9-_]+)' );
+
+			if( ( $pos = mb_ereg_search_pos() ) !== false )
+			{
+				$offset = $pos[ 0 ];
+				$length = $pos[ 1 ];
+				$match = mb_substr( $stringToParse, $offset, $length );
+
+				$key = trim( $match, '%{} ' );
+
+				$before = mb_substr( $stringToParse, 0, $offset );
+				$after = mb_substr( $stringToParse, $offset + $length );
+
+				$value = isset( $variables[ $key ] ) ? ( string )$variables[ $key ] : "";
+
+				$stringToParse = $before . $value . $after;
+			}
+		}
+		while( $pos );
+
+		return $stringToParse;
+	}
 }

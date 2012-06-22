@@ -325,6 +325,13 @@ code {
 	margin-bottom: 10px;
 }
 
+var {
+	border: 1px dotted #888;
+	background-color: #fff;
+	padding: 0px 2px;
+	font-style: normal;
+}
+
 textarea {
 	white-space: nowrap;
 	height: 200px;

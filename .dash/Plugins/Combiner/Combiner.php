@@ -84,6 +84,7 @@ class Combiner extends AbstractShiftRefresh
 					if( strlen( $contents ) > 0 )
 					{
 						file_put_contents( $targetFile, $contents );
+						chmod( $targetFile, 0777 );
 					}
 				}
 				else

@@ -56,7 +56,7 @@ class FlattenerBatchFilter extends \Dash\Plugin
 		            $include = true;
 
 		            if( strlen( $includeFilter ) > 0 ) $include = preg_match( $includeFilter, $file ) > 0;
-		            if( strlen( $excludeFilter ) > 0 ) $include = !( preg_match( $excludeFilter, $file ) > 0 );
+		            if( strlen( $excludeFilter ) > 0 ) $include = $include && !( preg_match( $excludeFilter, $file ) > 0 );
 
 		            if( $include )
 		            {

@@ -34,7 +34,7 @@ abstract class AbstractCurl extends \Dash\Plugin
 			$header = ( string )substr( $rawContents, 0, $info[ "header_size" ] );
 			$content = ( string )substr( $rawContents, $info[ "header_size" ] );
 
-			return array( "success" => true, "header" => $header, "content" => $content );
+			return array( "success" => true, "header" => $header, "content" => $content, "error" => $error );
 		}
 
 		return array( "success" => false, "error" => $error );

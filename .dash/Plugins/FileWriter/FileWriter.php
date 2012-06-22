@@ -26,6 +26,7 @@ class FileWriter extends \Dash\Plugin
 		$newFile = preg_replace( $pattern, $replacement, $originalFile );
 
 		file_put_contents( $newFile, $content );
+		chmod( $newFile, 0777 );
 	}
 
 	public function renderEventObservables( CommittableArrayObject $settings )

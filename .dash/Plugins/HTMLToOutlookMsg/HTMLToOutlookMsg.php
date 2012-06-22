@@ -42,6 +42,7 @@ class HTMLToOutlookMsg extends AbstractShiftRefresh
 		$outputFile = tempnam( sys_get_temp_dir(), "dash" ) . ".msg";
 
 		file_put_contents( $inputFile, $html );
+		chmod( $inputFile, 0777 );
 
 		$command = "{$converterExe} \"{$inputFile}\" \"{$outputFile}\"";
 		exec( $command );

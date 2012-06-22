@@ -59,6 +59,7 @@ class UniqueID extends \Dash\Plugin
 	private function setID( $id )
 	{
 		file_put_contents( $this->uniqueIDFile, $id );
+		chmod( $this->uniqueIDFile, 0777 );
 	}
 
 	public function renderCommonSettings()
